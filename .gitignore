@@ -1,6 +1,7 @@
 __pycache__/
 *.pyc
 *.pyo
+*.pyd
 .env
 config.env
 .venv/
@@ -9,3 +10,18 @@ env/
 .idea/
 .vscode/
 *.log
+voice2cc.log*
+
+# PyInstaller
+build/
+dist/
+*.spec.bak
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# OS
+.DS_Store
+Thumbs.db

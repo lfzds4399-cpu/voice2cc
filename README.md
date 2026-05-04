@@ -1,90 +1,166 @@
-# voice2cc · push-to-talk for Claude Code
+# voice2cc
 
-[![lint](https://github.com/lfzds4399-cpu/voice2cc/actions/workflows/lint.yml/badge.svg)](https://github.com/lfzds4399-cpu/voice2cc/actions/workflows/lint.yml)
-[![Python 3.9+](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/downloads/)
+> Push-to-talk speech-to-text for Windows. Hold a hotkey, speak, release — text is pasted into the focused field.
+
+[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows-blue.svg)](#install)
 
-> 中文版 → [README.zh-CN.md](./README.zh-CN.md)
-
-Hold a hotkey, speak, release — your speech is transcribed and pasted into the focused text field.
-Built for [Claude Code](https://claude.com/claude-code), works in any input.
-
-## At a glance
+> 🌏 [中文 README](./README.zh-CN.md)
 
 ```
-[hold key]   →   🔴 recording   (timer + mic level bar)
-[release]    →   🟡 transcribing
-                 →   🟢 ✓ pasted   (Ctrl+V into focus)
+[hold key]   →   ● recording   (timer + mic level + pre-roll catches first syllable)
+[release]    →   ◉ transcribing
+                 →   ✓ pasted   (Ctrl+V into focus, modifier-safe)
 ```
 
-## Why I built this
+## Why
 
-Long Chinese prompts in Claude Code are a thumb workout. Whisper-class STT is now fast enough that *holding a key and speaking* is genuinely faster than typing — but every voice tool I tried wanted to be a dictation suite, an accessibility framework, or a $30/mo SaaS. I just wanted **one key, one paste, no UI in my way**. So this is that.
+Long prompts in Claude Code / Cursor / any chat UI are a thumb workout. Whisper-class STT is now fast enough that **holding a key and speaking** is genuinely faster than typing — but every voice tool I tried wanted to be a full dictation suite. I just wanted **one key, one paste, no UI in the way**.
 
-## Features
+## What's new in v0.3
 
-- **Push-to-talk hotkey** (default `Ctrl + Shift + Space`)
-- **Always-on-top floating widget** — drag anywhere, real-time mic level bar (works in idle so you can verify the mic is alive)
-- **5 visual states**: idle / recording / transcribing / pasted / error
-- **Audio cues** at start, end, success
-- **Startup self-test** — pings the STT API to verify key + model + network on boot
-- **Typical 1–3s round-trip** on stable connection
-- **Pluggable backend** — defaults to SiliconFlow's `SenseVoiceSmall` (OpenAI-compatible HTTP); swap any other compatible STT in `voice2cc.py`
-- **Single-file Python** — < 500 LoC, no DB, no telemetry, no auto-update
+The v0.1/v0.2 single-file proof-of-concept proved the idea. v0.3 makes it actually usable:
+
+| Pain point in v0.2 | Fix in v0.3 |
+|---|---|
+| Pasting after Ctrl+Shift+Space sometimes opened VS Code's command palette | `paste_to_focus` now releases all modifiers and waits 200ms before sending Ctrl+V |
+| First syllable of every recording was clipped | Always-on 300ms pre-roll ring buffer, prepended on hotkey-down |
+| Only SiliconFlow was supported | 4 providers: SiliconFlow / OpenAI / Groq / Azure — all OpenAI-compatible HTTP |
+| Editing config.env in Notepad to change a key | First-run wizard + Settings dialog (provider, mic, hotkey, language) |
+| No tray icon — close the widget and you couldn't get it back | pystray icon with show/hide/settings/diagnose/quit |
+| English UI only | Bilingual EN / ZH with auto-detect |
+| "Why doesn't it work?" had no answer | Built-in diagnostics + rolling `voice2cc.log` |
+| Required Python install for non-developers | PyInstaller spec for one-folder `.exe` build |
 
 ## Install
 
-Requires Python 3.9+. Currently Windows-only (PRs for macOS / Linux welcome — see [CONTRIBUTING.md](./CONTRIBUTING.md)).
+### For developers
+
+Requires Python 3.10+.
 
 ```bash
-git clone https://github.com/<your-username>/voice2cc.git
+git clone https://github.com/lfzds4399-cpu/voice2cc.git
 cd voice2cc
 pip install -r requirements.txt
-cp .env.example config.env       # then edit and add your STT key
-python voice2cc.py
+python app.py
 ```
 
-Or on Windows just double-click `install.bat` once, then `start.bat` to launch.
+The first run shows a setup wizard. Pick a provider, paste your API key, click Test, click Save.
 
-Get a free SiliconFlow key at https://siliconflow.cn (or swap the backend for any OpenAI-compatible STT — see `transcribe()` in `voice2cc.py`).
+Or double-click `install.bat` once, then `start.bat` to launch.
 
-## Configure
+### For end users (no Python required)
 
-`config.env`:
+We don't yet ship a signed `.exe` (signing requires a $300/yr code-signing certificate). To build your own:
 
-```env
-SILICONFLOW_API_KEY=sk-...
-STT_MODEL=FunAudioLLM/SenseVoiceSmall
+```bash
+pip install pyinstaller
+build_tools\build.bat
+# → dist\voice2cc\voice2cc.exe
 ```
 
-Alternative models that work out of the box:
-- `iic/SenseVoiceSmall`
-- `openai-whisper-large-v3`
+Zip the `dist\voice2cc\` folder and distribute it.
 
-## Customize the hotkey
+## Providers
 
-Edit `HOT_KEYS` near the top of `voice2cc.py`:
+Pick whichever suits your situation:
 
-```python
-HOT_KEYS = {keyboard.Key.ctrl_r, keyboard.Key.shift, keyboard.Key.space}
+| Provider | Model recommendation | Best for |
+|---|---|---|
+| **SiliconFlow** | `FunAudioLLM/SenseVoiceSmall` | Free, Mandarin-native, China mainland accessible |
+| **OpenAI** | `whisper-1` / `gpt-4o-mini-transcribe` | Global, paid, English-strong |
+| **Groq** | `whisper-large-v3-turbo` | Fastest (~1s round trip), generous free tier |
+| **Azure** | `whisper` deployment | Enterprise / data-residency requirements |
+
+The wizard surfaces all four; settings can be changed any time from the tray icon.
+
+## Hotkeys
+
+Default: **Ctrl + Shift + Space**.
+
+If your IME (Chinese / Japanese / Korean) grabs that combo, change it in **Settings → Hotkey**, or pick from the presets:
+
+- `ctrl+alt+v`
+- `ctrl+\``
+- `f8` / `f9`
+- `right ctrl`
+
+## How it works
+
+```
+mic ──[InputStream]──┐
+                     ├── always-on 300ms pre-roll ring buffer
+hotkey ──[pynput]────┘
+   │                       ┌── prepend pre-roll
+   ↓ hold                  ↓
+RECORDING → audio queue → wav file
+   ↓ release
+TRANSCRIBING → provider (SiliconFlow / OpenAI / Groq / Azure)
+   ↓
+release modifiers ─→ wait 200ms ─→ Ctrl+V
+   ↓
+DONE / ERROR (logged to voice2cc.log)
+```
+
+The pre-roll buffer fixes the "first syllable lost" problem common to push-to-talk tools.
+The modifier-release-then-wait pattern fixes the "pasted as Ctrl+Shift+V" problem in apps like VS Code, Cursor, and any browser.
+
+## Project layout
+
+```
+voice2cc/
+├── app.py                       # entry-point shim
+├── start.bat / install.bat
+├── requirements.txt
+├── pytest.ini
+├── config.env (gitignored)      # your local config
+├── .env.example                 # template
+├── src/voice2cc/
+│   ├── main.py                  # orchestrator
+│   ├── config.py                # Settings + load/save
+│   ├── i18n.py                  # EN/ZH string table
+│   ├── audio.py                 # mic + pre-roll
+│   ├── hotkey.py                # global push-to-talk
+│   ├── paste.py                 # modifier-safe Ctrl+V
+│   ├── diagnostics.py           # startup self-test
+│   ├── autostart.py             # Windows registry HKCU\Run
+│   ├── providers/               # STT providers (siliconflow, openai, groq, azure)
+│   └── ui/                      # floating widget, tray, wizard, settings dialog
+├── tests/                       # 38 unit tests, no GUI/network needed
+└── build_tools/                 # PyInstaller spec + build.bat
 ```
 
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
-| Hotkey doesn't fire | A Chinese / Japanese / Korean IME is grabbing it — change `HOT_KEYS` |
-| Widget invisible | Probably off-screen — restart `start.bat` to reset position |
-| Red light on but no level bar | Mic permission: Windows Settings → Privacy → Microphone → Allow desktop apps |
-| Transcript wrong | Try a different `STT_MODEL`; `SenseVoiceSmall` is best for Mandarin |
-| `pip install sounddevice` hangs | `pip install sounddevice --no-binary :all:` or switch mirror |
+| Hotkey doesn't fire | An IME grabs Ctrl+Shift+Space — change hotkey in Settings |
+| Widget invisible | Right-click the tray icon → Show widget |
+| Red dot but no level bar | Windows Settings → Privacy → Microphone → Allow desktop apps |
+| Transcript wrong | Try a different model in Settings (Groq's whisper-large-v3 is strongest for English) |
+| `pip install sounddevice` hangs | `pip install sounddevice --no-binary :all:` or use a mirror |
 | No paste happens | Don't switch focus before release; check the target app doesn't block Ctrl+V |
-| Mic locked error | Another app holds the mic (DingTalk/Zoom/Discord) — close it |
+| Mic locked error | Another app holds the mic (Zoom / Discord / DingTalk) — close it |
+| Tray icon missing | `pystray` failed to install — voice2cc still runs, just without tray menu |
+| SiliconFlow timeouts | You're outside mainland China — switch provider in Settings |
+
+Diagnostics (Tray → Diagnose…) checks all of the above.
 
 ## Privacy
 
-Audio is sent to whichever STT endpoint you configure (SiliconFlow by default). Nothing is stored locally. There is no telemetry, no analytics, no auto-update mechanism — read `voice2cc.py` end-to-end if you want to verify (it's one file).
+Audio is sent to whichever STT provider you configure. **Nothing is stored on disk** beyond a rolling debug log (`voice2cc.log`, max ~1.5MB total). No telemetry, no auto-update, no analytics. The whole codebase is < 2k LoC — read it.
+
+## Development
+
+```bash
+git clone https://github.com/lfzds4399-cpu/voice2cc.git
+cd voice2cc
+pip install -r requirements.txt pytest
+python -m pytest tests/ -q
+```
+
+PRs welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md). Security: [SECURITY.md](./SECURITY.md).
 
 ## License
 
