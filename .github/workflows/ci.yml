@@ -47,7 +47,8 @@ jobs:
         run: pip install ruff
 
       - name: Ruff check
-        run: ruff check src/ tests/ app.py --select=E,F,W --ignore=E501,F401
+        # Only enforce real bugs: pyflakes (F) + syntax errors (E9). Skip stylistic nits.
+        run: ruff check src/ tests/ app.py --select=F,E9
 
       - name: Compile-check
         run: |

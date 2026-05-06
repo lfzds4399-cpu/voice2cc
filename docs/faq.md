@@ -7,7 +7,7 @@ Audio is sent to the STT provider you configured (Groq / OpenAI / SiliconFlow / 
 - **Wispr Flow**: Mac-first, $15/mo
 - **Talon**: brilliant, but year-long learning curve and command-language oriented
 - **Windows dictation**: modal (locks focus) and English-only on most builds
-- **voice2cc**: hold-and-paste primitive, $0, MIT, ~2 k LoC, 4 STT providers, English + Chinese first-class
+- **voice2cc**: hold-and-paste primitive, $0, MIT, ~3 700 LoC, 4 STT providers, English + Chinese first-class
 
 ### Q: Can I use it without an internet connection?
 Currently no — all 4 providers are HTTP. Local Whisper support is on the roadmap.

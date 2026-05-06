@@ -15,7 +15,7 @@
 
 ## I built this because typing 50-word AI prompts at 60 wpm was killing my thumbs
 
-Whisper-class STT is fast enough that **hold a key, speak, release** beats typing. Every voice tool I tried was either a heavyweight dictation suite, locked into one editor, or didn't auto-submit. So I made one that's the opposite of all three: **2 k LoC, hotkey + paste, MIT, no account on my side, no telemetry**.
+Whisper-class STT is fast enough that **hold a key, speak, release** beats typing. Every voice tool I tried was either a heavyweight dictation suite, locked into one editor, or didn't auto-submit. So I made one that's the opposite of all three: **~3 700 LoC of Python, hotkey + paste, MIT, no account on my side, no telemetry**.
 
 ## What works today
 
