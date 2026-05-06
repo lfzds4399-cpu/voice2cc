@@ -73,7 +73,9 @@ def test_effective_api_base_falls_back_to_provider_default(tmp_config):
 
 def test_asdict_safe_redacts_key(tmp_config):
     from voice2cc.config import Settings, asdict_safe
-    s = Settings(api_key="sk-1234567890abcdefghij")
+    # NOTE: this is a test-only mock value — not a real API key. The "sk-" prefix
+    # was triggering naive secret-scanners. Renamed to make the fakeness obvious.
+    s = Settings(api_key="dummy-mock-test-api-key-not-real-1234")
     d = asdict_safe(s)
-    assert "1234567890abcdefghij" not in d["api_key"]
+    assert "dummy-mock-test-api-key-not-real-1234" not in d["api_key"]
     assert "****" in d["api_key"]
