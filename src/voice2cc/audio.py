@@ -11,7 +11,7 @@ import logging
 import queue
 import threading
 from dataclasses import dataclass
-from typing import Optional
+from typing import Callable, Optional
 
 import numpy as np
 import sounddevice as sd
@@ -76,6 +76,13 @@ class MicCapture:
         self._recording: bool = False
         self._stream: Optional[sd.InputStream] = None
         self._device_name: str = "?"
+        # VAD / continuous-mode hook: every audio chunk is forwarded here when set.
+        # Callback is invoked from the audio thread — keep it cheap or spawn a worker.
+        self._frame_listener: Optional[Callable[[np.ndarray], None]] = None
+
+    def set_frame_listener(self, fn: Optional[Callable[[np.ndarray], None]]) -> None:
+        """Install a per-chunk callback (used by VAD in continuous mode). None to clear."""
+        self._frame_listener = fn
 
     @property
     def recording(self) -> bool:
@@ -153,9 +160,17 @@ class MicCapture:
                 self.audio_q.put(chunk)
             else:
                 self.preroll.append(chunk)
+            listener = self._frame_listener
         # volume level is updated regardless so the floating widget shows the mic is alive
         try:
             rms = float(np.sqrt(np.mean(indata.astype(np.float32) ** 2)))
             self.volume_level = min(1.0, rms * 12)
         except Exception:
             self.volume_level = 0.0
+        # Forward chunk to VAD listener (if any). Outside the lock so a slow
+        # listener can never block the audio callback's `_recording` check.
+        if listener is not None:
+            try:
+                listener(chunk)
+            except Exception:
+                logger.exception("frame_listener raised")

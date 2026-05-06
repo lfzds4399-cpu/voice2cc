@@ -4,6 +4,62 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] — 2026-05-06
+
+**The "zero-touch" release.** Hands-free dictation via VAD, smart-paste detection
+across 10+ apps, auto-Enter to submit. Verified live: from "press F9" → speak →
+text appears in your AI chat already submitted, no keyboard.
+
+### Added
+- **Continuous mode (Voice Activity Detection)** — press the toggle hotkey
+  (default **F9**) once and voice2cc listens hands-free: speech start/end is
+  detected from RMS energy with hysteresis (`min_speech_ms`, `min_silence_ms`),
+  each utterance is auto-paste + auto-Enter. Press F9 again to stop.
+  - 7 unit tests covering the state machine.
+  - Tunable via `VOICE2CC_VAD_THRESHOLD`, `VOICE2CC_VAD_MIN_SPEECH_MS`, `VOICE2CC_VAD_MIN_SILENCE_MS`.
+- **Smart paste** — auto-detects the foreground app and chooses Ctrl+V vs
+  Ctrl+Shift+V. Currently:
+  - Ctrl+Shift+V: VS Code, Cursor, Windsurf, Trae, Windows Terminal,
+    Windows PowerShell ISE, mintty (Git Bash), PuTTY, gVim.
+  - Ctrl+V (forced, never Ctrl+Shift+V): Chrome / Edge / Firefox / Notepad /
+    classic conhost (cmd / classic PowerShell window) — these would otherwise
+    open incognito-paste / dev-paste on Ctrl+Shift+V.
+- **Auto-Enter after paste** — sends Enter ~100ms after the paste keystroke so
+  AI chat submissions are zero-touch end-to-end. Toggleable
+  (`VOICE2CC_AUTO_ENTER_AFTER_PASTE`).
+- **Win32 keybd_event paste backend** replaces pynput on Windows — significantly
+  more reliable in apps that filter synthetic keystrokes (Electron sandbox,
+  some game-launcher overlays).
+- **Foreground-window restore** — captures the HWND at hotkey-down (or VAD
+  speech_start), then `SetForegroundWindow` + 50ms settle before paste. Uses
+  the AutoHotKey `AttachThreadInput` workaround for Windows' foreground-lock
+  rules. Only restores `ShowWindow(SW_RESTORE)` if the target was actually
+  minimised (`IsIconic`) — fixes a bug where maximised windows were
+  un-maximised on every paste.
+
+### Changed
+- `paste.py` rewritten end-to-end. Public API additions:
+  `paste_to_focus(text, target_hwnd=0, auto_enter=False, smart_paste=True)`,
+  `get_foreground_window()`, `needs_ctrl_shift_v(hwnd=0)`.
+- `audio.py` exposes `set_frame_listener(fn)` so VAD (or future modules) can
+  observe every audio chunk without owning the mic stream.
+- `hotkey.py` adds `ToggleHotkeyListener` for press-once toggle behaviour
+  (existing `HotkeyListener` is unchanged for push-to-talk).
+- 38 → **45 unit tests**, all passing offline.
+
+### Fixed
+- VS Code / Windows Terminal pastes that previously needed manual Ctrl+Shift+V.
+- "Pasted into the wrong window" — fixed with hwnd capture + restore.
+- "Paste un-maximises my window" (regression in 0.4.0-pre) — guarded with
+  `IsIconic` so SW_RESTORE only fires for genuinely minimised targets.
+
+### Known limitations
+- VAD is RMS-energy based (no webrtcvad/silero-vad yet). Works well in quiet
+  desktop environments; for noisy environments increase `VAD_THRESHOLD` to
+  ~0.025–0.03. webrtcvad/silero-vad upgrade path is wired in `vad.py` for v0.5.
+- Floating-widget status text in continuous mode still says "release F8 to
+  stop" (legacy push-to-talk wording) — cosmetic, fix queued for v0.4.1.
+
 ## [0.3.0] — 2026-05-04
 
 Full rewrite from a 460-line single file into a tested package, with multiple

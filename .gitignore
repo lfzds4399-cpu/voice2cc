@@ -25,3 +25,6 @@ htmlcov/
 # OS
 .DS_Store
 Thumbs.db
+
+# Internal launch / marketing planning docs — never publish
+marketing/

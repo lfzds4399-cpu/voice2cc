@@ -31,14 +31,15 @@ from .audio import MicCapture
 from .autostart import disable as autostart_disable, enable as autostart_enable, is_enabled as autostart_is_enabled
 from .config import CONFIG_PATH, Settings, install_root, load as load_settings, save as save_settings
 from .diagnostics import diagnose, format_report
-from .hotkey import HotkeyListener, hotkey_label
+from .hotkey import HotkeyListener, ToggleHotkeyListener, hotkey_label
 from .i18n import set_language, t
-from .paste import copy_to_clipboard, paste_to_focus
+from .paste import copy_to_clipboard, get_foreground_window, paste_to_focus
 from .providers import get_provider
 from .ui.floating import DONE, ERROR, FloatingPanel, IDLE, RECORDING, TRANSCRIBING
 from .ui.settings_dialog import SettingsDialog
 from .ui.tray import make_tray
 from .ui.wizard import Wizard
+from .vad import EnergyVAD, VADConfig
 
 
 # ── logging setup ────────────────────────────────────────────────
@@ -87,6 +88,14 @@ class Voice2CC:
             on_press=self._on_hotkey_press,
             on_release=self._on_hotkey_release,
         )
+
+        # Toggle hotkey for hands-free continuous (VAD) mode
+        self.continuous_toggle = ToggleHotkeyListener(
+            settings.continuous_toggle_hotkey,
+            on_toggle=self._toggle_continuous_mode,
+        )
+        self._continuous_active: bool = False
+        self._vad: Optional[EnergyVAD] = None
 
         self.provider = self._build_provider(settings)
 
@@ -258,6 +267,10 @@ class Voice2CC:
     def _on_hotkey_press(self) -> None:
         if self._state != IDLE:
             return
+        # Capture the foreground window BEFORE we touch anything — this is the
+        # window the user wants the paste to land in. Without this, the floating
+        # widget's update can steal focus and the paste lands in the wrong app.
+        self._target_hwnd = get_foreground_window()
         self._record_started = self.mic.begin_record()
         self._state = RECORDING
         self._t0 = time.time()
@@ -266,6 +279,64 @@ class Voice2CC:
 
     def _on_hotkey_release(self) -> None:
         if self._state != RECORDING:
+            return
+        self._state = TRANSCRIBING
+        threading.Thread(target=self._do_transcribe, daemon=True).start()
+
+    # ── continuous (VAD) mode ──────────────────────────────────
+    def _toggle_continuous_mode(self) -> None:
+        """Toggle hands-free VAD mode. F9 → on; F9 again → off."""
+        if self._continuous_active:
+            self._exit_continuous_mode()
+        else:
+            self._enter_continuous_mode()
+
+    def _enter_continuous_mode(self) -> None:
+        if self._continuous_active:
+            return
+        self._vad = EnergyVAD(
+            config=VADConfig(
+                threshold=self.settings.vad_threshold,
+                min_speech_ms=self.settings.vad_min_speech_ms,
+                min_silence_ms=self.settings.vad_min_silence_ms,
+                sample_rate=self.settings.sample_rate,
+            ),
+            on_speech_start=self._vad_speech_start,
+            on_speech_end=self._vad_speech_end,
+        )
+        self.mic.set_frame_listener(self._vad.process)
+        self._continuous_active = True
+        self.logger.info("continuous mode ON (vad threshold=%.4f)", self.settings.vad_threshold)
+        self.ui_q.put({"state": IDLE, "msg": "🎙️ continuous mode ON"})
+        _audio_cue(1200, 80, self.settings.play_audio_cues)
+
+    def _exit_continuous_mode(self) -> None:
+        if not self._continuous_active:
+            return
+        self.mic.set_frame_listener(None)
+        if self._vad is not None:
+            self._vad.reset()
+            self._vad = None
+        self._continuous_active = False
+        # If we were mid-recording, finalize it like a normal hotkey release.
+        if self._state == RECORDING:
+            self._on_hotkey_release()
+        self.logger.info("continuous mode OFF")
+        self.ui_q.put({"state": IDLE, "msg": "continuous mode OFF"})
+        _audio_cue(600, 80, self.settings.play_audio_cues)
+
+    def _vad_speech_start(self) -> None:
+        # Runs in audio thread — keep cheap, do not block.
+        if self._state != IDLE or not self._continuous_active:
+            return
+        self._target_hwnd = get_foreground_window()
+        self._record_started = self.mic.begin_record()
+        self._state = RECORDING
+        self._t0 = time.time()
+        self.ui_q.put({"state": RECORDING, "t0": self._t0})
+
+    def _vad_speech_end(self) -> None:
+        if self._state != RECORDING or not self._continuous_active:
             return
         self._state = TRANSCRIBING
         threading.Thread(target=self._do_transcribe, daemon=True).start()
@@ -310,7 +381,12 @@ class Voice2CC:
                 return
 
             if self.settings.paste_after_transcribe:
-                paste_to_focus(text)
+                paste_to_focus(
+                    text,
+                    target_hwnd=getattr(self, "_target_hwnd", 0),
+                    auto_enter=self.settings.auto_enter_after_paste,
+                    smart_paste=self.settings.smart_paste,
+                )
                 pasted = True
             else:
                 copy_to_clipboard(text)
@@ -369,12 +445,17 @@ def run() -> int:
         root.destroy()
         return 2
 
-    # Hotkey listener
+    # Hotkey listeners (push-to-talk + continuous-mode toggle)
     try:
         app.hotkeys.start()
+        app.continuous_toggle.start()
     except Exception:
         log.exception("hotkey listener failed")
         return 3
+
+    # Auto-enter continuous mode at launch if configured
+    if settings.continuous_mode:
+        app._toggle_continuous_mode()
 
     # tk root
     root = tk.Tk()

@@ -1,18 +1,30 @@
 # voice2cc
 
-> Push-to-talk speech-to-text for Windows. Hold a hotkey, speak, release — text is pasted into the focused field.
+> **Zero-touch speech-to-AI for Windows.** Press a key, speak, your text is pasted into the focused chat *and* submitted — without ever touching the keyboard for the rest. Or press F9 once and never touch the keyboard at all.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows-blue.svg)](#install)
+[![Tests](https://img.shields.io/badge/tests-45%20passing-brightgreen.svg)](./tests/)
 
 > 🌏 [中文 README](./README.zh-CN.md)
 
+## Two modes, both hands-free
+
 ```
-[hold key]   →   ● recording   (timer + mic level + pre-roll catches first syllable)
-[release]    →   ◉ transcribing
-                 →   ✓ pasted   (Ctrl+V into focus, modifier-safe)
+push-to-talk  (default — F8)            continuous   (F9 to toggle)
+─────────────                           ─────────────
+hold F8         ──┐                     press F9 once     ──┐
+[speak]           │                     [speak]              │
+release F8      ──┘ → transcribe        [pause 1.5s]       ──┘ → transcribe
+                  → smart Ctrl+(Shift+)V → smart Ctrl+(Shift+)V
+                  → auto Enter            → auto Enter
+                                          → loop, until you press F9 again
 ```
+
+**Smart paste** auto-picks `Ctrl+V` for browsers / Notepad and `Ctrl+Shift+V`
+for VS Code / Cursor / Windows Terminal / PowerShell ISE / mintty / etc.
+**Auto Enter** submits to AI chat without you touching the keyboard.
 
 ## Why
 

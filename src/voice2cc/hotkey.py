@@ -158,3 +158,66 @@ class HotkeyListener:
                     logger.exception("hotkey on_release handler raised")
         except Exception:
             logger.exception("hotkey release dispatch")
+
+
+class ToggleHotkeyListener:
+    """Fires on_toggle exactly once each time the user presses-and-releases the hotkey.
+
+    Used for the continuous-mode (VAD) on/off switch. Different from HotkeyListener
+    (push-to-talk hold) which fires both press and release.
+    """
+
+    def __init__(self, hotkey_spec: str, on_toggle: Callable[[], None]):
+        self.set_hotkey(hotkey_spec)
+        self._on_toggle = on_toggle
+        self._held: set = set()
+        self._fired: bool = False
+        self._listener: Optional[keyboard.Listener] = None
+        self._lock = threading.Lock()
+
+    def set_hotkey(self, spec: str) -> None:
+        self._spec = spec
+        self._target = parse_hotkey(spec)
+        if not self._target:
+            logger.error("toggle hotkey %r parsed to empty set; using f9", spec)
+            self._target = parse_hotkey("f9")
+
+    def start(self) -> None:
+        self._listener = keyboard.Listener(on_press=self._handle_press, on_release=self._handle_release)
+        self._listener.daemon = True
+        self._listener.start()
+        logger.info("toggle hotkey listening: %s", self._spec)
+
+    def stop(self) -> None:
+        if self._listener is not None:
+            try:
+                self._listener.stop()
+            except Exception:
+                pass
+            self._listener = None
+
+    def _handle_press(self, key):
+        try:
+            with self._lock:
+                self._held.add(normalize_key(key))
+                if self._target.issubset(self._held) and not self._fired:
+                    self._fired = True
+                    fire = True
+                else:
+                    fire = False
+            if fire:
+                try:
+                    self._on_toggle()
+                except Exception:
+                    logger.exception("toggle on_toggle handler raised")
+        except Exception:
+            logger.exception("toggle press dispatch")
+
+    def _handle_release(self, key):
+        try:
+            with self._lock:
+                self._held.discard(normalize_key(key))
+                if self._fired and not self._target.issubset(self._held):
+                    self._fired = False
+        except Exception:
+            logger.exception("toggle release dispatch")

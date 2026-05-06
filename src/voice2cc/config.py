@@ -47,7 +47,14 @@ class Settings:
     azure_region: str = ""                   # azure-only
 
     # ── Hotkey ──────────────────────────────────────────────────
-    hotkey: str = "ctrl+shift+space"         # human-readable, parsed by hotkey.py
+    hotkey: str = "ctrl+shift+space"         # push-to-talk hotkey (hold to record)
+    continuous_toggle_hotkey: str = "f9"     # toggle hands-free continuous (VAD) mode
+
+    # ── Continuous (VAD) mode ──────────────────────────────────
+    continuous_mode: bool = False            # start in continuous mode at launch
+    vad_threshold: float = 0.015             # RMS energy speech threshold
+    vad_min_speech_ms: int = 250             # min continuous speech to start recording
+    vad_min_silence_ms: int = 1500           # silence duration that ends an utterance
 
     # ── Audio ───────────────────────────────────────────────────
     sample_rate: int = 16000
@@ -60,6 +67,8 @@ class Settings:
     show_floating_widget: bool = True
     play_audio_cues: bool = True
     paste_after_transcribe: bool = True      # if False, only copies to clipboard
+    auto_enter_after_paste: bool = True      # auto press Enter after paste (zero-touch send)
+    smart_paste: bool = True                 # detect VS Code/Terminal → use Ctrl+Shift+V
 
     # ── Diagnostics ─────────────────────────────────────────────
     log_level: str = "INFO"                  # DEBUG | INFO | WARNING | ERROR
