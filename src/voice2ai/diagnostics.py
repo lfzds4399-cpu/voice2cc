@@ -83,7 +83,7 @@ def check_provider_reachable(provider_name: str, host_override: Optional[str] = 
     }
     host = host_override or hosts.get(provider_name)
     if not host:
-        return CheckResult(f"reach:{provider_name}", False, f"unknown provider")
+        return CheckResult(f"reach:{provider_name}", False, "unknown provider")
     t0 = time.time()
     try:
         sock = socket.create_connection((host, 443), timeout=5.0)
