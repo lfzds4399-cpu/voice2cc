@@ -4,6 +4,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] — 2026-05-06
+
+Polish & discoverability release. No code behaviour changes — just CI/CD,
+docs, and GitHub setup so others can find / contribute / build.
+
+### Added
+- **GitHub Actions CI** (`.github/workflows/ci.yml`) — runs pytest on Windows
+  for Python 3.10 / 3.11 / 3.12 plus ruff lint on every push & PR.
+- **GitHub Actions Release** (`.github/workflows/release.yml`) — on every
+  `v*.*.*` tag push, builds the Windows .exe via PyInstaller and attaches the
+  `voice2cc-vX.Y.Z-windows.zip` artefact to the matching GitHub Release.
+- **`docs/`** — `getting-started.md`, `faq.md`, `troubleshooting.md`.
+- **3 pinned "help wanted" issues** — macOS port, Linux port, silero-vad
+  upgrade. Each has scope, suggested approach, and merge criteria.
+- **README hero rewrite** — front-line ASCII demo, problem statement, "what
+  works today" matrix, "verified live" section.
+- **20 GitHub topics** + improved repo description for SEO discoverability.
+
+### Removed
+- `.github/workflows/lint.yml` referenced the old single-file `voice2cc.py`
+  and pushed to a non-existent `main` branch — replaced by the new `ci.yml`.
+
 ## [0.4.1] — 2026-05-06
 
 Same-day follow-up to 0.4.0, focused on real-world VAD usability and "paste

@@ -1,0 +1,65 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to build (e.g. v0.4.2)"
+        required: true
+
+jobs:
+  build-windows-exe:
+    name: Build voice2cc.exe (Windows)
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip pyinstaller
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: python -m pytest tests/ -q
+
+      - name: Build .exe (folder mode)
+        run: python -m PyInstaller build_tools/voice2cc.spec --clean --noconfirm
+
+      - name: Resolve tag name
+        id: vars
+        shell: pwsh
+        run: |
+          $tag = "${{ github.event.inputs.tag }}"
+          if (-not $tag) { $tag = "${{ github.ref_name }}" }
+          echo "tag=$tag" >> $env:GITHUB_OUTPUT
+          echo "asset=voice2cc-$tag-windows.zip" >> $env:GITHUB_OUTPUT
+
+      - name: Zip dist folder
+        shell: pwsh
+        run: |
+          Compress-Archive -Path dist/voice2cc/* -DestinationPath ${{ steps.vars.outputs.asset }} -Force
+          Get-ChildItem ${{ steps.vars.outputs.asset }} | Format-Table Name, Length
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: voice2cc-windows-${{ steps.vars.outputs.tag }}
+          path: ${{ steps.vars.outputs.asset }}
+
+      - name: Attach to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.vars.outputs.tag }}
+          files: ${{ steps.vars.outputs.asset }}
+          fail_on_unmatched_files: false

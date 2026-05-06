@@ -1,30 +1,47 @@
 # voice2cc
 
-> **Zero-touch speech-to-AI for Windows.** Press a key, speak, your text is pasted into the focused chat *and* submitted — without ever touching the keyboard for the rest. Or press F9 once and never touch the keyboard at all.
+> **Hold a key, talk, your message lands in the focused chat — submitted.**
+> Or press one button and never touch the keyboard at all. Windows · MIT · 48 tests.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows-blue.svg)](#install)
-[![Tests](https://img.shields.io/badge/tests-45%20passing-brightgreen.svg)](./tests/)
+[![Tests](https://img.shields.io/badge/tests-48%20passing-brightgreen.svg)](./tests/)
+[![Release](https://img.shields.io/github/v/release/lfzds4399-cpu/voice2cc?label=release&color=blue)](https://github.com/lfzds4399-cpu/voice2cc/releases/latest)
 
-> 🌏 [中文 README](./README.zh-CN.md)
-
-## Two modes, both hands-free
+> 🌏 [中文 README](./README.zh-CN.md) · [⬇️ Download .exe](https://github.com/lfzds4399-cpu/voice2cc/releases/latest)
 
 ```
-push-to-talk  (default — F8)            continuous   (F9 to toggle)
-─────────────                           ─────────────
-hold F8         ──┐                     press F9 once     ──┐
-[speak]           │                     [speak]              │
-release F8      ──┘ → transcribe        [pause 1.5s]       ──┘ → transcribe
-                  → smart Ctrl+(Shift+)V → smart Ctrl+(Shift+)V
-                  → auto Enter            → auto Enter
-                                          → loop, until you press F9 again
+   ┌──────────────────────────────────────────────────────────────────────┐
+   │  YOU:    [hold F8] "explain this function in plain english" [release]│
+   │                                                                       │
+   │  voice2cc:  ● rec 2.4s  →  ◉ transcribing 0.8s  →  ✓ pasted 87ms     │
+   │                                                                       │
+   │  CLAUDE CODE:  explain this function in plain english        [SENT]  │
+   └──────────────────────────────────────────────────────────────────────┘
 ```
 
-**Smart paste** auto-picks `Ctrl+V` for browsers / Notepad and `Ctrl+Shift+V`
-for VS Code / Cursor / Windows Terminal / PowerShell ISE / mintty / etc.
-**Auto Enter** submits to AI chat without you touching the keyboard.
+## I built this because typing 50-word AI prompts at 60 wpm was killing my thumbs
+
+Whisper-class STT is fast enough that **hold a key, speak, release** beats typing. Every voice tool I tried was either a heavyweight dictation suite, locked into one editor, or didn't auto-submit. So I made one that's the opposite of all three: **2 k LoC, hotkey + paste, MIT, no account on my side, no telemetry**.
+
+## What works today
+
+| | |
+|---|---|
+| 🎯 **Push-to-talk** (F8 hold) | Hold key → speak → release → transcript pastes into the focused window AND auto-Enters |
+| 🤖 **Continuous / VAD** (F9 toggle) | Speak. Pause 1.5 s. Transcript appears, submitted. Loop. Energy + ZCR + hysteresis = breathing-mid-sentence does NOT cut you off |
+| 🧠 **Smart paste, 10+ apps** | VS Code / Cursor / Windsurf / Trae / Windows Terminal / PowerShell ISE / mintty / PuTTY → auto Ctrl+Shift+V. Browsers / Notepad / WeChat / Notion → forced Ctrl+V (no incognito-paste) |
+| 🪟 **Multi-window aware** | Click the window you want, speak. voice2cc captures the HWND at speech-start and pastes there even if focus drifts |
+| 🌐 **4 STT providers** | Groq (fastest, free tier) / SiliconFlow (Mandarin-strong, China-friendly) / OpenAI / Azure |
+| 🧪 **48 unit tests** | offline-only — no GUI, no network |
+| 📦 **One-folder .exe** | No Python install for end users — unzip and run |
+
+## Verified live (2026-05-06)
+
+- WeChat input → speech → text lands in WeChat ✓
+- Three Claude Code windows open, click one → speech → that window receives text ✓
+- Mid-sentence breathing (换气) does NOT prematurely end the utterance ✓
 
 ## Why
 
