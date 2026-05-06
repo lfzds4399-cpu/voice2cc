@@ -243,9 +243,21 @@ def paste_to_focus(
         return
 
     # Windows path: restore focus → release stuck mods → choose paste flavour → enter
+    u = _user32()
     if target_hwnd:
         restored = _restore_foreground(target_hwnd)
         logger.info("focus restore hwnd=%s ok=%s", hex(target_hwnd), restored)
+        if not restored and u is not None:
+            # SetForegroundWindow refused (e.g. the original window closed,
+            # or Windows' foreground-lock blocked us). Degrade to whatever has
+            # focus right now — better than pasting into a dead HWND.
+            try:
+                live_hwnd = int(u.GetForegroundWindow())
+            except Exception:
+                live_hwnd = 0
+            if live_hwnd and live_hwnd != target_hwnd:
+                logger.info("falling back to live foreground hwnd=%s", hex(live_hwnd))
+                target_hwnd = live_hwnd
         time.sleep(0.05)
 
     _release_all_modifiers_win32()

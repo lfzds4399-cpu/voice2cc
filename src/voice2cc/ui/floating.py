@@ -47,6 +47,29 @@ class FloatingPanel:
         root.attributes("-alpha", 0.94)
         root.configure(bg="#1e1e2e")
 
+        # WS_EX_NOACTIVATE — make sure the widget can never be the foreground.
+        # Without this, recording-state UI updates can briefly steal focus away
+        # from the user's chat window between speech_start and paste, and
+        # GetForegroundWindow returns the widget instead of the app the user
+        # clicked on. With NOACTIVATE, Windows refuses to give the widget focus
+        # at all and the user's last-clicked window stays foreground.
+        try:
+            import ctypes
+            import sys
+            if sys.platform == "win32":
+                root.update_idletasks()  # ensure HWND exists
+                # winfo_id returns child HWND; we want the toplevel via GetParent
+                hwnd = ctypes.windll.user32.GetParent(root.winfo_id()) or root.winfo_id()
+                GWL_EXSTYLE = -20
+                WS_EX_NOACTIVATE = 0x08000000
+                WS_EX_TOOLWINDOW = 0x00000080
+                u = ctypes.windll.user32
+                ex_style = u.GetWindowLongW(hwnd, GWL_EXSTYLE)
+                u.SetWindowLongW(hwnd, GWL_EXSTYLE,
+                                 ex_style | WS_EX_NOACTIVATE | WS_EX_TOOLWINDOW)
+        except Exception:
+            logger.exception("failed to set WS_EX_NOACTIVATE")
+
         sw, sh = root.winfo_screenwidth(), root.winfo_screenheight()
         w, h = 460, 92
         root.geometry(f"{w}x{h}+{sw - w - 24}+{sh - h - 80}")

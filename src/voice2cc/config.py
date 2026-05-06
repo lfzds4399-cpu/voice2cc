@@ -52,7 +52,9 @@ class Settings:
 
     # ── Continuous (VAD) mode ──────────────────────────────────
     continuous_mode: bool = False            # start in continuous mode at launch
-    vad_threshold: float = 0.015             # RMS energy speech threshold
+    vad_threshold: float = 0.015             # RMS energy threshold to ENTER speech
+    vad_silence_ratio: float = 0.4           # silence floor = threshold * ratio (hysteresis)
+    vad_max_zcr: float = 0.18                # max zero-crossing rate (filters breath/wind)
     vad_min_speech_ms: int = 250             # min continuous speech to start recording
     vad_min_silence_ms: int = 1500           # silence duration that ends an utterance
 
@@ -104,6 +106,15 @@ _LEGACY_KEY_MAP = {
     "VOICE2CC_SHOW_WIDGET": (None, None, "show_floating_widget"),
     "VOICE2CC_PLAY_CUES": (None, None, "play_audio_cues"),
     "VOICE2CC_PASTE_AFTER": (None, None, "paste_after_transcribe"),
+    "VOICE2CC_AUTO_ENTER_AFTER_PASTE": (None, None, "auto_enter_after_paste"),
+    "VOICE2CC_SMART_PASTE": (None, None, "smart_paste"),
+    "VOICE2CC_CONTINUOUS_MODE": (None, None, "continuous_mode"),
+    "VOICE2CC_CONTINUOUS_TOGGLE_HOTKEY": (None, None, "continuous_toggle_hotkey"),
+    "VOICE2CC_VAD_THRESHOLD": (None, None, "vad_threshold"),
+    "VOICE2CC_VAD_SILENCE_RATIO": (None, None, "vad_silence_ratio"),
+    "VOICE2CC_VAD_MAX_ZCR": (None, None, "vad_max_zcr"),
+    "VOICE2CC_VAD_MIN_SPEECH_MS": (None, None, "vad_min_speech_ms"),
+    "VOICE2CC_VAD_MIN_SILENCE_MS": (None, None, "vad_min_silence_ms"),
 }
 
 
@@ -112,14 +123,16 @@ def _coerce(field_name: str, raw: str):
     if raw is None:
         return None
     if field_name in ("autostart", "show_floating_widget", "play_audio_cues",
-                      "paste_after_transcribe"):
+                      "paste_after_transcribe", "auto_enter_after_paste",
+                      "smart_paste", "continuous_mode"):
         return raw.strip().lower() in ("1", "true", "yes", "on")
-    if field_name in ("sample_rate", "input_device"):
+    if field_name in ("sample_rate", "input_device",
+                      "vad_min_speech_ms", "vad_min_silence_ms"):
         try:
             return int(raw)
         except ValueError:
             return None
-    if field_name in ("preroll_sec",):
+    if field_name in ("preroll_sec", "vad_threshold", "vad_max_zcr", "vad_silence_ratio"):
         try:
             return float(raw)
         except ValueError:

@@ -4,6 +4,50 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] — 2026-05-06
+
+Same-day follow-up to 0.4.0, focused on real-world VAD usability and "paste
+into the wrong window" failures discovered while dogfooding hands-free mode
+for an hour.
+
+### Added
+- **VAD hysteresis** — separate `threshold` (enter speech) and `silence_floor =
+  threshold × silence_ratio` (exit speech). Default ratio 0.4 means a
+  mid-sentence breath at RMS=0.010 keeps the utterance alive even though the
+  speech-enter threshold is 0.015. Stops "every breath ends my sentence."
+- **ZCR (zero-crossing-rate) gate** in EnergyVAD — filters broadband noise
+  (breath into mic, fan, AC, paper rustle) which has high RMS but ZCR > 0.20.
+  Voiced speech sits at ZCR 0.05–0.15 and passes. Configurable via
+  `VOICE2CC_VAD_MAX_ZCR` (default 0.18; set 1.0 to disable).
+- **WS_EX_NOACTIVATE on the floating widget** — Windows now refuses to give
+  the widget focus, so when the user clicks another Claude Code / VS Code /
+  Edge window, that click really takes effect and voice2cc captures the
+  correct foreground HWND on speech_start.
+- **WS_EX_TOOLWINDOW on the floating widget** — keeps it out of the Alt+Tab
+  list (it's an overlay, not an app).
+- **Foreground-window fallback** in paste — if `SetForegroundWindow` returns
+  False for the captured HWND (window closed / foreground-lock denied), fall
+  back to whatever has focus right now instead of pasting into a dead HWND.
+- 3 new VAD tests for ZCR-gate behaviour. Total: 45 → **48 tests** passing.
+
+### Fixed
+- "voice2cc records forever and never paste-submits": breath at RMS just below
+  enter-threshold accumulated `silence_ms` and incorrectly triggered
+  speech_end. Hysteresis fixes this end of the failure mode.
+- "every exhale fires recording": ZCR gate rejects the high-frequency content
+  of breath / fan noise even when its energy clears the RMS bar.
+- "paste lands in the wrong window when I have multiple Claude Code tabs
+  open": floating widget was occasionally winning focus during state-change
+  UI updates; NOACTIVATE prevents this entirely.
+- "paste into a window that closed during transcribe" → paste no-op'd.
+  Fallback to live foreground HWND fixes this.
+
+### Verified live (real WeChat / multi-window test, 2026-05-06)
+- Continuous mode + breath/换气 mid-sentence → utterance stays alive,
+  paste fires only on real 1.2s pause.
+- Click another VS Code window → speech → text lands there.
+- Click WeChat input box → speech → text lands in WeChat.
+
 ## [0.4.0] — 2026-05-06
 
 **The "zero-touch" release.** Hands-free dictation via VAD, smart-paste detection

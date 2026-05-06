@@ -297,6 +297,8 @@ class Voice2CC:
         self._vad = EnergyVAD(
             config=VADConfig(
                 threshold=self.settings.vad_threshold,
+                silence_ratio=self.settings.vad_silence_ratio,
+                max_zcr=self.settings.vad_max_zcr,
                 min_speech_ms=self.settings.vad_min_speech_ms,
                 min_silence_ms=self.settings.vad_min_silence_ms,
                 sample_rate=self.settings.sample_rate,

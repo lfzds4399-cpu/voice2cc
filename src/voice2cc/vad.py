@@ -36,14 +36,32 @@ logger = logging.getLogger("voice2cc.vad")
 
 @dataclass
 class VADConfig:
-    threshold: float = 0.015
+    threshold: float = 0.015           # min RMS to ENTER speech (gate IDLE→SPEECH)
+    silence_ratio: float = 0.4         # RMS exit gate = threshold * silence_ratio
+                                       #   → ratio 0.4 means SPEECH→IDLE needs RMS < 0.006
+                                       #     so quiet breath / short pauses don't end the utterance
+                                       #     while a true 1.5s silence still does
+    max_zcr: float = 0.18              # max zero-crossing rate to count as speech
+                                       #   speech ZCR ≈ 0.05–0.15 (vowels low, fricatives ~0.20)
+                                       #   breath / wind / fan ≈ 0.20–0.45 (broadband noise)
+                                       #   set to 1.0 to disable ZCR gate entirely
     min_speech_ms: int = 250
     min_silence_ms: int = 1500
     sample_rate: int = 16000
 
 
 class EnergyVAD:
-    """Energy-based VAD with hysteresis."""
+    """RMS + zero-crossing-rate VAD with hysteresis.
+
+    The ZCR gate is what separates speech from breath / fan noise / wind / clicks.
+    Voiced speech has clear periodic structure → ZCR stays in the 0.05–0.15 range.
+    Aspirated noise (breathing into the mic, room AC, paper rustle) is broadband
+    → ZCR jumps above ~0.20.
+
+    A frame counts as speech only if BOTH:
+      1. RMS ≥ threshold (loud enough), AND
+      2. ZCR ≤ max_zcr (periodic enough)
+    """
 
     IDLE = "idle"
     SPEECH = "speech"
@@ -67,19 +85,42 @@ class EnergyVAD:
             return 0.0
         return float(np.sqrt(np.mean(chunk.astype(np.float32) ** 2)))
 
+    @staticmethod
+    def _zcr(chunk: np.ndarray) -> float:
+        """Zero-crossing rate — fraction of samples where sign changes.
+        ~0.05–0.15 for voiced speech, ~0.20+ for broadband noise."""
+        if chunk.size < 2:
+            return 0.0
+        # Skip near-zero samples (DC offset / silence) so ZCR isn't dominated by noise floor
+        a = chunk.astype(np.float32).flatten()
+        # Normalise so threshold check is amplitude-independent
+        amax = float(np.max(np.abs(a))) or 1.0
+        a = a / amax
+        signs = np.where(a >= 0, 1, -1).astype(np.int8)
+        crossings = int(np.sum(np.abs(np.diff(signs))) // 2)
+        return crossings / float(len(a))
+
     def process(self, chunk: np.ndarray) -> None:
         rms = self._rms(chunk)
-        is_speech = rms >= self.cfg.threshold
+        zcr = self._zcr(chunk)
         chunk_ms = int(1000 * len(chunk) / self.cfg.sample_rate)
 
+        # Two thresholds for hysteresis:
+        #   enter_speech: strict — needs both RMS ≥ threshold AND ZCR ≤ max_zcr
+        #   exit_speech (a.k.a. silence): much looser — only TRUE silence (very low RMS)
+        #     counts. This lets quiet breath / mid-sentence pauses NOT end the utterance.
+        enter_speech = (rms >= self.cfg.threshold) and (zcr <= self.cfg.max_zcr)
+        silence_floor = self.cfg.threshold * self.cfg.silence_ratio
+        is_silent = rms < silence_floor   # used in SPEECH state
+
         if self.state == self.IDLE:
-            if is_speech:
+            if enter_speech:
                 self._speech_ms += chunk_ms
                 if self._speech_ms >= self.cfg.min_speech_ms:
                     self.state = self.SPEECH
                     self._speech_ms = 0
                     self._silence_ms = 0
-                    logger.info("VAD: speech_start (rms=%.4f)", rms)
+                    logger.info("VAD: speech_start (rms=%.4f zcr=%.3f)", rms, zcr)
                     try:
                         self.on_speech_start()
                     except Exception:
@@ -88,7 +129,9 @@ class EnergyVAD:
                 self._speech_ms = max(0, self._speech_ms - chunk_ms)
 
         elif self.state == self.SPEECH:
-            if is_speech:
+            if not is_silent:
+                # Anything above silence_floor (including breath / mid-sentence pauses)
+                # keeps the utterance alive. Only TRUE silence counts down the timer.
                 self._silence_ms = 0
             else:
                 self._silence_ms += chunk_ms
@@ -96,7 +139,7 @@ class EnergyVAD:
                     self.state = self.IDLE
                     silence = self._silence_ms
                     self._silence_ms = 0
-                    logger.info("VAD: speech_end (silence=%dms)", silence)
+                    logger.info("VAD: speech_end (silence=%dms rms=%.4f)", silence, rms)
                     try:
                         self.on_speech_end()
                     except Exception:
