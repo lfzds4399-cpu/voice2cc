@@ -11,15 +11,7 @@
 
 > 🌏 [中文 README](./README.zh-CN.md) · [⬇️ Download .exe](https://github.com/lfzds4399-cpu/voice2cc/releases/latest)
 
-```
-   ┌──────────────────────────────────────────────────────────────────────┐
-   │  YOU:    [hold F8] "explain this function in plain english" [release]│
-   │                                                                       │
-   │  voice2cc:  ● rec 2.4s  →  ◉ transcribing 0.8s  →  ✓ pasted 87ms     │
-   │                                                                       │
-   │  CLAUDE CODE:  explain this function in plain english        [SENT]  │
-   └──────────────────────────────────────────────────────────────────────┘
-```
+![voice2cc demo (animated illustration)](./docs/voice2cc-demo.gif)
 
 ## I built this because typing 50-word AI prompts at 60 wpm was killing my thumbs
 

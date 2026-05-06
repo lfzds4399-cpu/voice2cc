@@ -28,3 +28,6 @@ Thumbs.db
 
 # Internal launch / marketing planning docs — never publish
 marketing/
+
+# Remotion demo render workspace (the rendered .gif gets copied to docs/)
+.remotion-demo/
