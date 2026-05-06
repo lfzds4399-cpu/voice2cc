@@ -7,7 +7,7 @@ import re
 from dataclasses import dataclass
 from typing import Optional
 
-logger = logging.getLogger("voice2cc.provider")
+logger = logging.getLogger("voice2ai.provider")
 
 
 @dataclass

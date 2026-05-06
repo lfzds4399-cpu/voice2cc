@@ -22,7 +22,7 @@ import time
 
 import pyperclip
 
-logger = logging.getLogger("voice2cc.paste")
+logger = logging.getLogger("voice2ai.paste")
 
 # ── Win32 keybd_event constants ────────────────────────────────────────────
 _KEYEVENTF_KEYUP = 0x0002
@@ -225,7 +225,7 @@ def paste_to_focus(
         auto_enter: if True, send Enter ~100ms after paste (zero-touch send)
         smart_paste: if True, detect VS Code/Terminal and use Ctrl+Shift+V
 
-    Logs paste mode + auto-enter to voice2cc.log so user can audit.
+    Logs paste mode + auto-enter to voice2ai.log so user can audit.
     """
     copy_to_clipboard(text)
 

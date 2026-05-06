@@ -16,7 +16,7 @@ from ..config import Settings, save as save_settings
 from ..i18n import t
 from ..providers import DEFAULT_MODELS, PROVIDER_KEY_HELP_URL, get_provider
 
-logger = logging.getLogger("voice2cc.ui.wizard")
+logger = logging.getLogger("voice2ai.ui.wizard")
 
 
 def _provider_hint(name: str) -> str:

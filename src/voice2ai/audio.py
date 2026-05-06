@@ -16,7 +16,7 @@ from typing import Callable, Optional
 import numpy as np
 import sounddevice as sd
 
-logger = logging.getLogger("voice2cc.audio")
+logger = logging.getLogger("voice2ai.audio")
 
 CHANNELS = 1
 

@@ -1,4 +1,4 @@
-"""OpenAI Whisper STT (/v1/audio/transcriptions)."""
+"""SiliconFlow STT (OpenAI-compatible /v1/audio/transcriptions)."""
 from __future__ import annotations
 
 import logging
@@ -9,13 +9,13 @@ import requests
 
 from .base import STTProvider, TranscribeResult, clean_response_text
 
-logger = logging.getLogger("voice2cc.provider.openai")
+logger = logging.getLogger("voice2ai.provider.siliconflow")
 
 
-class OpenAIProvider(STTProvider):
-    name = "openai"
+class SiliconFlowProvider(STTProvider):
+    name = "siliconflow"
 
-    DEFAULT_BASE = "https://api.openai.com/v1"
+    DEFAULT_BASE = "https://api.siliconflow.cn/v1"
 
     def transcribe(self, wav_path: str, language_hint: Optional[str] = None) -> TranscribeResult:
         if not self.api_key:
@@ -25,7 +25,7 @@ class OpenAIProvider(STTProvider):
         t0 = time.time()
         try:
             with open(wav_path, "rb") as f:
-                data = {"model": self.model, "response_format": "json"}
+                data = {"model": self.model}
                 if language_hint:
                     data["language"] = language_hint
                 r = requests.post(

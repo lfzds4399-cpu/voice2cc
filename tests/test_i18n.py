@@ -1,7 +1,7 @@
 """tests/test_i18n.py — i18n string lookup, formatting, fallback."""
 from __future__ import annotations
 
-from voice2cc.i18n import set_language, t
+from voice2ai.i18n import set_language, t
 
 
 def test_english_default():

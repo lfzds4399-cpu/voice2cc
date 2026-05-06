@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.5.0] — 2026-05-07
+
+### Renamed: voice2cc → voice2ai
+
+The project's name no longer ties it to a specific AI tool. **voice2cc → voice2ai** because the use case is "voice → any AI chat" — Claude Code is just one of many. WeChat / browsers / Cursor / VS Code Terminal / Notion all work the same way.
+
+### Migration
+
+- **Repo URL** changed: `lfzds4399-cpu/voice2cc` → `lfzds4399-cpu/voice2ai`. GitHub auto-redirects old URLs.
+- **Python package** renamed: `from voice2cc import ...` → `from voice2ai import ...`
+- **Env var prefix** renamed: `VOICE2CC_*` → `VOICE2AI_*`. Old `VOICE2CC_*` keys still load (deprecated alias) — you don't have to edit `config.env`.
+- **Log file** renamed: `voice2cc.log` → `voice2ai.log`
+- **Build artefact** renamed: `voice2cc.exe` → `voice2ai.exe`
+- **Demo GIF** renamed: `docs/voice2cc-demo.gif` → `docs/voice2ai-demo.gif`
+
+### Behaviour: unchanged from 0.4.4
+
+This is a rename release, not a behaviour release. All 48 tests still pass. Push-to-talk, VAD continuous mode, smart paste, auto-Enter — all identical.
+
+
+
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -14,7 +35,7 @@ docs, and GitHub setup so others can find / contribute / build.
   for Python 3.10 / 3.11 / 3.12 plus ruff lint on every push & PR.
 - **GitHub Actions Release** (`.github/workflows/release.yml`) — on every
   `v*.*.*` tag push, builds the Windows .exe via PyInstaller and attaches the
-  `voice2cc-vX.Y.Z-windows.zip` artefact to the matching GitHub Release.
+  `voice2ai-vX.Y.Z-windows.zip` artefact to the matching GitHub Release.
 - **`docs/`** — `getting-started.md`, `faq.md`, `troubleshooting.md`.
 - **3 pinned "help wanted" issues** — macOS port, Linux port, silero-vad
   upgrade. Each has scope, suggested approach, and merge criteria.
@@ -23,7 +44,7 @@ docs, and GitHub setup so others can find / contribute / build.
 - **20 GitHub topics** + improved repo description for SEO discoverability.
 
 ### Removed
-- `.github/workflows/lint.yml` referenced the old single-file `voice2cc.py`
+- `.github/workflows/lint.yml` referenced the old single-file `voice2ai.py`
   and pushed to a non-existent `main` branch — replaced by the new `ci.yml`.
 
 ## [0.4.1] — 2026-05-06
@@ -40,10 +61,10 @@ for an hour.
 - **ZCR (zero-crossing-rate) gate** in EnergyVAD — filters broadband noise
   (breath into mic, fan, AC, paper rustle) which has high RMS but ZCR > 0.20.
   Voiced speech sits at ZCR 0.05–0.15 and passes. Configurable via
-  `VOICE2CC_VAD_MAX_ZCR` (default 0.18; set 1.0 to disable).
+  `VOICE2AI_VAD_MAX_ZCR` (default 0.18; set 1.0 to disable).
 - **WS_EX_NOACTIVATE on the floating widget** — Windows now refuses to give
   the widget focus, so when the user clicks another Claude Code / VS Code /
-  Edge window, that click really takes effect and voice2cc captures the
+  Edge window, that click really takes effect and voice2ai captures the
   correct foreground HWND on speech_start.
 - **WS_EX_TOOLWINDOW on the floating widget** — keeps it out of the Alt+Tab
   list (it's an overlay, not an app).
@@ -53,7 +74,7 @@ for an hour.
 - 3 new VAD tests for ZCR-gate behaviour. Total: 45 → **48 tests** passing.
 
 ### Fixed
-- "voice2cc records forever and never paste-submits": breath at RMS just below
+- "voice2ai records forever and never paste-submits": breath at RMS just below
   enter-threshold accumulated `silence_ms` and incorrectly triggered
   speech_end. Hysteresis fixes this end of the failure mode.
 - "every exhale fires recording": ZCR gate rejects the high-frequency content
@@ -78,11 +99,11 @@ text appears in your AI chat already submitted, no keyboard.
 
 ### Added
 - **Continuous mode (Voice Activity Detection)** — press the toggle hotkey
-  (default **F9**) once and voice2cc listens hands-free: speech start/end is
+  (default **F9**) once and voice2ai listens hands-free: speech start/end is
   detected from RMS energy with hysteresis (`min_speech_ms`, `min_silence_ms`),
   each utterance is auto-paste + auto-Enter. Press F9 again to stop.
   - 7 unit tests covering the state machine.
-  - Tunable via `VOICE2CC_VAD_THRESHOLD`, `VOICE2CC_VAD_MIN_SPEECH_MS`, `VOICE2CC_VAD_MIN_SILENCE_MS`.
+  - Tunable via `VOICE2AI_VAD_THRESHOLD`, `VOICE2AI_VAD_MIN_SPEECH_MS`, `VOICE2AI_VAD_MIN_SILENCE_MS`.
 - **Smart paste** — auto-detects the foreground app and chooses Ctrl+V vs
   Ctrl+Shift+V. Currently:
   - Ctrl+Shift+V: VS Code, Cursor, Windsurf, Trae, Windows Terminal,
@@ -92,7 +113,7 @@ text appears in your AI chat already submitted, no keyboard.
     open incognito-paste / dev-paste on Ctrl+Shift+V.
 - **Auto-Enter after paste** — sends Enter ~100ms after the paste keystroke so
   AI chat submissions are zero-touch end-to-end. Toggleable
-  (`VOICE2CC_AUTO_ENTER_AFTER_PASTE`).
+  (`VOICE2AI_AUTO_ENTER_AFTER_PASTE`).
 - **Win32 keybd_event paste backend** replaces pynput on Windows — significantly
   more reliable in apps that filter synthetic keystrokes (Electron sandbox,
   some game-launcher overlays).
@@ -146,29 +167,29 @@ providers, a tray icon, configuration GUI, bilingual UI, and a `.exe` build path
 - **Modifier-safe paste** — explicitly releases Ctrl/Shift/Alt/Cmd before sending Ctrl+V,
   fixing the v0.2 bug where some apps interpreted the paste as Ctrl+Shift+V.
 - **Windows autostart** option (HKCU\\Run, no admin required).
-- **PyInstaller build pipeline** — `build_tools/voice2cc.spec` + `build_tools/build.bat`,
-  produces `dist/voice2cc/voice2cc.exe` (folder mode for faster startup + fewer AV alarms).
-- **Rotating log file** — `voice2cc.log` (max ~1.5 MB total). Includes API latency and errors.
+- **PyInstaller build pipeline** — `build_tools/voice2ai.spec` + `build_tools/build.bat`,
+  produces `dist/voice2ai/voice2ai.exe` (folder mode for faster startup + fewer AV alarms).
+- **Rotating log file** — `voice2ai.log` (max ~1.5 MB total). Includes API latency and errors.
 - **38 unit tests** — config roundtrip & legacy migration, hotkey parser, providers (HTTP
   mocked), i18n, diagnostics, paste, pre-roll buffer behavior. No GUI/network needed.
-- **`python -m voice2cc`** entry point in addition to `python app.py`.
+- **`python -m voice2ai`** entry point in addition to `python app.py`.
 
 ### Changed
-- Refactored from `voice2cc.py` (460 LoC, single file) into `src/voice2cc/` (≈1.8k LoC,
+- Refactored from `voice2ai.py` (460 LoC, single file) into `src/voice2ai/` (≈1.8k LoC,
   21 modules with clear seams).
-- Renamed shim from `voice2cc.py` → `app.py` to avoid colliding with the `voice2cc` package
+- Renamed shim from `voice2ai.py` → `app.py` to avoid colliding with the `voice2ai` package
   name during pytest collection. `start.bat` updated.
 - Default `pythonw app.py` (instead of `python`) so non-developers don't see a console window.
-- `config.env` now supports `VOICE2CC_PROVIDER`, `VOICE2CC_HOTKEY`, `VOICE2CC_LANGUAGE`,
-  `VOICE2CC_AUTOSTART`, `VOICE2CC_INPUT_DEVICE`, `VOICE2CC_SHOW_WIDGET`,
-  `VOICE2CC_PLAY_CUES`, `VOICE2CC_PASTE_AFTER`, plus all four `*_API_KEY` keys.
+- `config.env` now supports `VOICE2AI_PROVIDER`, `VOICE2AI_HOTKEY`, `VOICE2AI_LANGUAGE`,
+  `VOICE2AI_AUTOSTART`, `VOICE2AI_INPUT_DEVICE`, `VOICE2AI_SHOW_WIDGET`,
+  `VOICE2AI_PLAY_CUES`, `VOICE2AI_PASTE_AFTER`, plus all four `*_API_KEY` keys.
   Old `SILICONFLOW_API_KEY` + `STT_MODEL` keys still work — `provider` is inferred.
 
 ### Fixed
 - Pasting into VS Code / Cursor / browsers no longer occasionally opens the command palette
   or incognito window because the paste was interpreted as Ctrl+Shift+V.
 - The first syllable of recordings is no longer clipped on the hotkey edge.
-- Tracebacks and provider errors now hit `voice2cc.log` so users can attach it to issues.
+- Tracebacks and provider errors now hit `voice2ai.log` so users can attach it to issues.
 
 ## [0.1.0] — 2026-05-01
 

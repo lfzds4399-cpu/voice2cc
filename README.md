@@ -1,4 +1,4 @@
-# voice2cc
+# voice2ai
 
 > **Hold a key, talk, your message lands in the focused chat — submitted.**
 > Or press one button and never touch the keyboard at all. Windows · MIT · 48 tests.
@@ -7,11 +7,11 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows-blue.svg)](#install)
 [![Tests](https://img.shields.io/badge/tests-48%20passing-brightgreen.svg)](./tests/)
-[![Release](https://img.shields.io/github/v/release/lfzds4399-cpu/voice2cc?label=release&color=blue)](https://github.com/lfzds4399-cpu/voice2cc/releases/latest)
+[![Release](https://img.shields.io/github/v/release/lfzds4399-cpu/voice2ai?label=release&color=blue)](https://github.com/lfzds4399-cpu/voice2ai/releases/latest)
 
-> 🌏 [中文 README](./README.zh-CN.md) · [⬇️ Download .exe](https://github.com/lfzds4399-cpu/voice2cc/releases/latest)
+> 🌏 [中文 README](./README.zh-CN.md) · [⬇️ Download .exe](https://github.com/lfzds4399-cpu/voice2ai/releases/latest)
 
-![voice2cc demo (animated illustration)](./docs/voice2cc-demo.gif)
+![voice2ai demo (animated illustration)](./docs/voice2ai-demo.gif)
 
 ## I built this because typing 50-word AI prompts at 60 wpm was killing my thumbs
 
@@ -24,7 +24,7 @@ Whisper-class STT is fast enough that **hold a key, speak, release** beats typin
 | 🎯 **Push-to-talk** (F8 hold) | Hold key → speak → release → transcript pastes into the focused window AND auto-Enters |
 | 🤖 **Continuous / VAD** (F9 toggle) | Speak. Pause 1.5 s. Transcript appears, submitted. Loop. Energy + ZCR + hysteresis = breathing-mid-sentence does NOT cut you off |
 | 🧠 **Smart paste, 10+ apps** | VS Code / Cursor / Windsurf / Trae / Windows Terminal / PowerShell ISE / mintty / PuTTY → auto Ctrl+Shift+V. Browsers / Notepad / WeChat / Notion → forced Ctrl+V (no incognito-paste) |
-| 🪟 **Multi-window aware** | Click the window you want, speak. voice2cc captures the HWND at speech-start and pastes there even if focus drifts |
+| 🪟 **Multi-window aware** | Click the window you want, speak. voice2ai captures the HWND at speech-start and pastes there even if focus drifts |
 | 🌐 **4 STT providers** | Groq (fastest, free tier) / SiliconFlow (Mandarin-strong, China-friendly) / OpenAI / Azure |
 | 🧪 **48 unit tests** | offline-only — no GUI, no network |
 | 📦 **One-folder .exe** | No Python install for end users — unzip and run |
@@ -51,7 +51,7 @@ The v0.1/v0.2 single-file proof-of-concept proved the idea. v0.3 makes it actual
 | Editing config.env in Notepad to change a key | First-run wizard + Settings dialog (provider, mic, hotkey, language) |
 | No tray icon — close the widget and you couldn't get it back | pystray icon with show/hide/settings/diagnose/quit |
 | English UI only | Bilingual EN / ZH with auto-detect |
-| "Why doesn't it work?" had no answer | Built-in diagnostics + rolling `voice2cc.log` |
+| "Why doesn't it work?" had no answer | Built-in diagnostics + rolling `voice2ai.log` |
 | Required Python install for non-developers | PyInstaller spec for one-folder `.exe` build |
 
 ## Install
@@ -61,8 +61,8 @@ The v0.1/v0.2 single-file proof-of-concept proved the idea. v0.3 makes it actual
 Requires Python 3.10+.
 
 ```bash
-git clone https://github.com/lfzds4399-cpu/voice2cc.git
-cd voice2cc
+git clone https://github.com/lfzds4399-cpu/voice2ai.git
+cd voice2ai
 pip install -r requirements.txt
 python app.py
 ```
@@ -78,10 +78,10 @@ We don't yet ship a signed `.exe` (signing requires a $300/yr code-signing certi
 ```bash
 pip install pyinstaller
 build_tools\build.bat
-# → dist\voice2cc\voice2cc.exe
+# → dist\voice2ai\voice2ai.exe
 ```
 
-Zip the `dist\voice2cc\` folder and distribute it.
+Zip the `dist\voice2ai\` folder and distribute it.
 
 ## Providers
 
@@ -121,7 +121,7 @@ TRANSCRIBING → provider (SiliconFlow / OpenAI / Groq / Azure)
    ↓
 release modifiers ─→ wait 200ms ─→ Ctrl+V
    ↓
-DONE / ERROR (logged to voice2cc.log)
+DONE / ERROR (logged to voice2ai.log)
 ```
 
 The pre-roll buffer fixes the "first syllable lost" problem common to push-to-talk tools.
@@ -130,14 +130,14 @@ The modifier-release-then-wait pattern fixes the "pasted as Ctrl+Shift+V" proble
 ## Project layout
 
 ```
-voice2cc/
+voice2ai/
 ├── app.py                       # entry-point shim
 ├── start.bat / install.bat
 ├── requirements.txt
 ├── pytest.ini
 ├── config.env (gitignored)      # your local config
 ├── .env.example                 # template
-├── src/voice2cc/
+├── src/voice2ai/
 │   ├── main.py                  # orchestrator
 │   ├── config.py                # Settings + load/save
 │   ├── i18n.py                  # EN/ZH string table
@@ -163,20 +163,20 @@ voice2cc/
 | `pip install sounddevice` hangs | `pip install sounddevice --no-binary :all:` or use a mirror |
 | No paste happens | Don't switch focus before release; check the target app doesn't block Ctrl+V |
 | Mic locked error | Another app holds the mic (Zoom / Discord / DingTalk) — close it |
-| Tray icon missing | `pystray` failed to install — voice2cc still runs, just without tray menu |
+| Tray icon missing | `pystray` failed to install — voice2ai still runs, just without tray menu |
 | SiliconFlow timeouts | You're outside mainland China — switch provider in Settings |
 
 Diagnostics (Tray → Diagnose…) checks all of the above.
 
 ## Privacy
 
-Audio is sent to whichever STT provider you configure. **Nothing is stored on disk** beyond a rolling debug log (`voice2cc.log`, max ~1.5MB total). No telemetry, no auto-update, no analytics. The whole codebase is < 2k LoC — read it.
+Audio is sent to whichever STT provider you configure. **Nothing is stored on disk** beyond a rolling debug log (`voice2ai.log`, max ~1.5MB total). No telemetry, no auto-update, no analytics. The whole codebase is < 2k LoC — read it.
 
 ## Development
 
 ```bash
-git clone https://github.com/lfzds4399-cpu/voice2cc.git
-cd voice2cc
+git clone https://github.com/lfzds4399-cpu/voice2ai.git
+cd voice2ai
 pip install -r requirements.txt pytest
 python -m pytest tests/ -q
 ```

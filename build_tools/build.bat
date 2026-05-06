@@ -2,8 +2,8 @@
 chcp 65001 >nul
 cd /d %~dp0..
 
-title voice2cc - build exe
-echo voice2cc · PyInstaller build (folder mode)
+title voice2ai - build exe
+echo voice2ai · PyInstaller build (folder mode)
 echo.
 
 where python >nul 2>nul
@@ -15,7 +15,7 @@ if errorlevel 1 (
 python -m pip install --upgrade pip pyinstaller >nul
 
 if not exist dist mkdir dist
-python -m PyInstaller build_tools\voice2cc.spec --clean --noconfirm
+python -m PyInstaller build_tools\voice2ai.spec --clean --noconfirm
 if errorlevel 1 (
     echo [error] PyInstaller build failed. See output above.
     pause & exit /b 2
@@ -23,8 +23,8 @@ if errorlevel 1 (
 
 echo.
 echo ============================================
-echo Build done.  dist\voice2cc\voice2cc.exe
+echo Build done.  dist\voice2ai\voice2ai.exe
 echo ============================================
-echo To test:  dist\voice2cc\voice2cc.exe
-echo To distribute:  zip the entire dist\voice2cc\ folder.
+echo To test:  dist\voice2ai\voice2ai.exe
+echo To distribute:  zip the entire dist\voice2ai\ folder.
 pause

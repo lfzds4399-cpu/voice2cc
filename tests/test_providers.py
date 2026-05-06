@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from voice2cc.providers import DEFAULT_MODELS, PROVIDERS, get_provider
-from voice2cc.providers.base import clean_response_text
+from voice2ai.providers import DEFAULT_MODELS, PROVIDERS, get_provider
+from voice2ai.providers.base import clean_response_text
 
 
 def test_registry_has_four_providers():
@@ -61,8 +61,8 @@ def test_siliconflow_post_invocation(tmp_path):
     fake = MagicMock(status_code=200, text="{}")
     fake.json.return_value = {"text": "hello"}
 
-    with patch("voice2cc.providers.siliconflow.requests.post", return_value=fake) as mock_post:
-        from voice2cc.providers import get_provider
+    with patch("voice2ai.providers.siliconflow.requests.post", return_value=fake) as mock_post:
+        from voice2ai.providers import get_provider
         cls = get_provider("siliconflow")
         p = cls(api_key="sk-x", model="FunAudioLLM/SenseVoiceSmall")
         r = p.transcribe(str(wav))
@@ -84,8 +84,8 @@ def test_openai_uses_response_format_json(tmp_path):
     fake = MagicMock(status_code=200, text="{}")
     fake.json.return_value = {"text": "world"}
 
-    with patch("voice2cc.providers.openai.requests.post", return_value=fake) as mock_post:
-        from voice2cc.providers import get_provider
+    with patch("voice2ai.providers.openai.requests.post", return_value=fake) as mock_post:
+        from voice2ai.providers import get_provider
         cls = get_provider("openai")
         p = cls(api_key="sk-y", model="whisper-1")
         r = p.transcribe(str(wav), language_hint="en")

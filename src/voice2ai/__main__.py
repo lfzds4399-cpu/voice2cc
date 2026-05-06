@@ -1,4 +1,4 @@
-"""Run with: python -m voice2cc"""
+"""Run with: python -m voice2ai"""
 import sys
 from .main import run
 

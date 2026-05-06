@@ -12,7 +12,7 @@ from typing import Callable, Optional
 
 from pynput import keyboard
 
-logger = logging.getLogger("voice2cc.hotkey")
+logger = logging.getLogger("voice2ai.hotkey")
 
 
 # Map human names → primary pynput Key. Left-side variants are canonical.

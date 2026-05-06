@@ -3,7 +3,7 @@ from __future__ import annotations
 
 from unittest.mock import patch, MagicMock
 
-from voice2cc.diagnostics import (
+from voice2ai.diagnostics import (
     CheckResult, check_dependencies, check_provider_reachable,
     check_api, format_report,
 )

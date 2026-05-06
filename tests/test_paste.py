@@ -13,7 +13,7 @@ from unittest.mock import MagicMock, patch
 
 import pyperclip  # noqa: F401  (imported for module presence check)
 
-from voice2cc.paste import (
+from voice2ai.paste import (
     _KEYEVENTF_KEYUP,
     _MODIFIERS_TO_RELEASE,
     _VK_CONTROL,
@@ -24,7 +24,7 @@ from voice2cc.paste import (
 
 
 def test_copy_to_clipboard_uses_pyperclip():
-    with patch("voice2cc.paste.pyperclip.copy") as mock_copy:
+    with patch("voice2ai.paste.pyperclip.copy") as mock_copy:
         copy_to_clipboard("hello")
     mock_copy.assert_called_once_with("hello")
 
@@ -33,10 +33,10 @@ def test_paste_releases_modifiers_before_ctrl_v():
     """Critical fix: any pre-existing modifier must be released before pressing Ctrl+V."""
     fake_user32 = MagicMock()
 
-    with patch("voice2cc.paste.pyperclip.copy") as mock_copy, \
-         patch("voice2cc.paste._user32", return_value=fake_user32), \
-         patch("voice2cc.paste.time.sleep"), \
-         patch("voice2cc.paste.sys.platform", "win32"):
+    with patch("voice2ai.paste.pyperclip.copy") as mock_copy, \
+         patch("voice2ai.paste._user32", return_value=fake_user32), \
+         patch("voice2ai.paste.time.sleep"), \
+         patch("voice2ai.paste.sys.platform", "win32"):
         paste_to_focus("hi", settle_ms=10)
 
     mock_copy.assert_called_once_with("hi")

@@ -31,7 +31,7 @@ from typing import Callable
 
 import numpy as np
 
-logger = logging.getLogger("voice2cc.vad")
+logger = logging.getLogger("voice2ai.vad")
 
 
 @dataclass

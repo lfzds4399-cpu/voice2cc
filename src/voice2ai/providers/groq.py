@@ -9,7 +9,7 @@ import requests
 
 from .base import STTProvider, TranscribeResult, clean_response_text
 
-logger = logging.getLogger("voice2cc.provider.groq")
+logger = logging.getLogger("voice2ai.provider.groq")
 
 
 class GroqProvider(STTProvider):

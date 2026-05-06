@@ -12,7 +12,7 @@ on:
 
 jobs:
   build-windows-exe:
-    name: Build voice2cc.exe (Windows)
+    name: Build voice2ai.exe (Windows)
     runs-on: windows-latest
     permissions:
       contents: write
@@ -33,7 +33,7 @@ jobs:
         run: python -m pytest tests/ -q
 
       - name: Build .exe (folder mode)
-        run: python -m PyInstaller build_tools/voice2cc.spec --clean --noconfirm
+        run: python -m PyInstaller build_tools/voice2ai.spec --clean --noconfirm
 
       - name: Resolve tag name
         id: vars
@@ -42,18 +42,18 @@ jobs:
           $tag = "${{ github.event.inputs.tag }}"
           if (-not $tag) { $tag = "${{ github.ref_name }}" }
           echo "tag=$tag" >> $env:GITHUB_OUTPUT
-          echo "asset=voice2cc-$tag-windows.zip" >> $env:GITHUB_OUTPUT
+          echo "asset=voice2ai-$tag-windows.zip" >> $env:GITHUB_OUTPUT
 
       - name: Zip dist folder
         shell: pwsh
         run: |
-          Compress-Archive -Path dist/voice2cc/* -DestinationPath ${{ steps.vars.outputs.asset }} -Force
+          Compress-Archive -Path dist/voice2ai/* -DestinationPath ${{ steps.vars.outputs.asset }} -Force
           Get-ChildItem ${{ steps.vars.outputs.asset }} | Format-Table Name, Length
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: voice2cc-windows-${{ steps.vars.outputs.tag }}
+          name: voice2ai-windows-${{ steps.vars.outputs.tag }}
           path: ${{ steps.vars.outputs.asset }}
 
       - name: Attach to GitHub Release

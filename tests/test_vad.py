@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import numpy as np
 
-from voice2cc.vad import EnergyVAD, VADConfig
+from voice2ai.vad import EnergyVAD, VADConfig
 
 
 def _silence(ms: int, sr: int = 16000) -> np.ndarray:

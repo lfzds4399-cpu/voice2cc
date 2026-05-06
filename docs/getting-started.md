@@ -1,4 +1,4 @@
-# Getting started — voice2cc
+# Getting started — voice2ai
 
 5 minutes from clone → "I just spoke into my AI chat and it auto-submitted."
 
@@ -6,18 +6,18 @@
 
 ### Path A: Download the .exe (no Python needed)
 
-1. Go to the [latest release](https://github.com/lfzds4399-cpu/voice2cc/releases/latest)
-2. Download **`voice2cc-vX.Y.Z-windows.zip`**
+1. Go to the [latest release](https://github.com/lfzds4399-cpu/voice2ai/releases/latest)
+2. Download **`voice2ai-vX.Y.Z-windows.zip`**
 3. Unzip anywhere
-4. Double-click `voice2cc.exe`
+4. Double-click `voice2ai.exe`
 
-> Windows SmartScreen will warn the first time (the .exe is unsigned — code-signing certs are $300/yr). Click **More info → Run anyway**. Inspect `voice2cc.log` later if you don't trust me.
+> Windows SmartScreen will warn the first time (the .exe is unsigned — code-signing certs are $300/yr). Click **More info → Run anyway**. Inspect `voice2ai.log` later if you don't trust me.
 
 ### Path B: From source (developers)
 
 ```powershell
-git clone https://github.com/lfzds4399-cpu/voice2cc
-cd voice2cc
+git clone https://github.com/lfzds4399-cpu/voice2ai
+cd voice2ai
 python -m pip install -r requirements.txt
 python app.py
 ```
@@ -52,7 +52,7 @@ Best for: **AI chat** where you want to think before submitting, then send a fin
 ### Continuous mode (VAD)
 
 ```
-press F9 once  →  walk away if you want, voice2cc keeps listening
+press F9 once  →  walk away if you want, voice2ai keeps listening
               ↓
               [you speak] → [pause 1.5 s]  →  utterance pastes + auto-Enters
               ↓
@@ -78,11 +78,11 @@ A tray icon (Windows system tray) gives you:
 - Open log
 - Quit
 
-If the tray icon is missing, `pip install pystray` was skipped — voice2cc still runs, just without the menu.
+If the tray icon is missing, `pip install pystray` was skipped — voice2ai still runs, just without the menu.
 
 ## 5. Where things land
 
-| Window you've focused | Paste keystroke voice2cc sends |
+| Window you've focused | Paste keystroke voice2ai sends |
 |---|---|
 | VS Code, Cursor, Windsurf, Trae | Ctrl+Shift+V |
 | Windows Terminal, PowerShell ISE, mintty, PuTTY, gVim | Ctrl+Shift+V |

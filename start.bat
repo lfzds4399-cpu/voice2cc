@@ -1,7 +1,7 @@
 @echo off
 chcp 65001 >nul
 cd /d %~dp0
-title voice2cc
+title voice2ai
 
 REM Use pythonw if available so no console window flashes for non-developers.
 where pythonw >nul 2>nul

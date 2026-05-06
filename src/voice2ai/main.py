@@ -44,8 +44,8 @@ from .vad import EnergyVAD, VADConfig
 
 # ── logging setup ────────────────────────────────────────────────
 def _setup_logging(settings: Settings) -> Path:
-    log_path = install_root() / "voice2cc.log"
-    logger = logging.getLogger("voice2cc")
+    log_path = install_root() / "voice2ai.log"
+    logger = logging.getLogger("voice2ai")
     logger.setLevel(getattr(logging, settings.log_level.upper(), logging.INFO))
     if not logger.handlers:
         fh = logging.handlers.RotatingFileHandler(
@@ -70,7 +70,7 @@ def _audio_cue(freq: int, dur_ms: int, enabled: bool) -> None:
 class Voice2CC:
     def __init__(self, settings: Settings):
         self.settings = settings
-        self.logger = logging.getLogger("voice2cc.main")
+        self.logger = logging.getLogger("voice2ai.main")
 
         self._state: str = IDLE
         self._t0: float = 0.0
@@ -210,7 +210,7 @@ class Voice2CC:
         self.logger.info("settings applied")
 
     def open_log(self) -> None:
-        log_path = install_root() / "voice2cc.log"
+        log_path = install_root() / "voice2ai.log"
         try:
             if sys.platform.startswith("win"):
                 os.startfile(str(log_path))  # type: ignore[attr-defined]
@@ -416,8 +416,8 @@ def _autostart_target_path() -> str:
 def run() -> int:
     raw_settings = load_settings()
     log_path = _setup_logging(raw_settings)
-    log = logging.getLogger("voice2cc.main")
-    log.info("voice2cc v%s start | log=%s", __version__, log_path)
+    log = logging.getLogger("voice2ai.main")
+    log.info("voice2ai v%s start | log=%s", __version__, log_path)
 
     set_language(raw_settings.language)
 
@@ -443,7 +443,7 @@ def run() -> int:
         # Show a tk error dialog so users without a console see it
         root = tk.Tk(); root.withdraw()
         from tkinter import messagebox
-        messagebox.showerror("voice2cc", f"Microphone failed: {e}\n\nSee voice2cc.log.")
+        messagebox.showerror("voice2ai", f"Microphone failed: {e}\n\nSee voice2ai.log.")
         root.destroy()
         return 2
 
@@ -491,7 +491,7 @@ def run() -> int:
     try:
         root.mainloop()
     finally:
-        log.info("voice2cc exit")
+        log.info("voice2ai exit")
         try:
             app.mic.stop()
         except Exception:

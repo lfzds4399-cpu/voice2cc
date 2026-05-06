@@ -1,8 +1,8 @@
 @echo off
 chcp 65001 >nul
 cd /d %~dp0
-title voice2cc - install
-echo voice2cc · install dependencies
+title voice2ai - install
+echo voice2ai · install dependencies
 echo.
 
 where python >nul 2>nul
@@ -28,6 +28,6 @@ if errorlevel 1 (
 
 echo.
 echo ============================================
-echo Done. Run start.bat to launch voice2cc.
+echo Done. Run start.bat to launch voice2ai.
 echo ============================================
 pause

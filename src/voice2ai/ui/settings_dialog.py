@@ -20,7 +20,7 @@ from ..hotkey import hotkey_label
 from ..i18n import t
 from ..providers import DEFAULT_MODELS, PROVIDER_KEY_HELP_URL, get_provider
 
-logger = logging.getLogger("voice2cc.ui.settings")
+logger = logging.getLogger("voice2ai.ui.settings")
 
 
 class SettingsDialog:

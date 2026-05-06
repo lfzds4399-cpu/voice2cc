@@ -1,11 +1,4 @@
-"""Azure OpenAI Whisper.
-
-Azure Whisper has a different URL shape than OpenAI/SiliconFlow/Groq:
-  POST https://<resource>.openai.azure.com/openai/deployments/<deployment>/audio/transcriptions?api-version=2024-02-15-preview
-
-So `azure_region` here is actually the resource subdomain (or full base override).
-For most users we recommend setting `api_base` to the full deployment URL prefix.
-"""
+"""OpenAI Whisper STT (/v1/audio/transcriptions)."""
 from __future__ import annotations
 
 import logging
@@ -16,38 +9,28 @@ import requests
 
 from .base import STTProvider, TranscribeResult, clean_response_text
 
-logger = logging.getLogger("voice2cc.provider.azure")
-
-DEFAULT_API_VERSION = "2024-06-01"
+logger = logging.getLogger("voice2ai.provider.openai")
 
 
-class AzureProvider(STTProvider):
-    name = "azure"
+class OpenAIProvider(STTProvider):
+    name = "openai"
+
+    DEFAULT_BASE = "https://api.openai.com/v1"
 
     def transcribe(self, wav_path: str, language_hint: Optional[str] = None) -> TranscribeResult:
         if not self.api_key:
             return TranscribeResult("", 0, error="no api_key")
-
-        base = self.api_base.rstrip("/") if self.api_base else ""
-        if not base:
-            region = self.extras.get("azure_region", "").strip()
-            if not region:
-                return TranscribeResult(
-                    "", 0,
-                    error="azure provider needs api_base or azure_region (resource subdomain)"
-                )
-            base = f"https://{region}.openai.azure.com/openai/deployments/{self.model}"
-
-        url = f"{base}/audio/transcriptions?api-version={DEFAULT_API_VERSION}"
+        base = self.api_base or self.DEFAULT_BASE
+        url = f"{base}/audio/transcriptions"
         t0 = time.time()
         try:
             with open(wav_path, "rb") as f:
-                data = {"response_format": "json"}
+                data = {"model": self.model, "response_format": "json"}
                 if language_hint:
                     data["language"] = language_hint
                 r = requests.post(
                     url,
-                    headers={"api-key": self.api_key},
+                    headers={"Authorization": f"Bearer {self.api_key}"},
                     files={"file": ("voice.wav", f, "audio/wav")},
                     data=data,
                     timeout=60,

@@ -4,7 +4,7 @@ from __future__ import annotations
 import pytest
 from pynput import keyboard
 
-from voice2cc.hotkey import HotkeyListener, hotkey_label, normalize_key, parse_hotkey
+from voice2ai.hotkey import HotkeyListener, hotkey_label, normalize_key, parse_hotkey
 
 
 def test_parse_simple_combo():

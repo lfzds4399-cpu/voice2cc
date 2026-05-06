@@ -3,7 +3,7 @@
 Auto-detects from settings.language (auto → system locale → fallback en).
 
 Usage:
-    from voice2cc.i18n import t, set_language
+    from voice2ai.i18n import t, set_language
     set_language("auto")  # or "zh" / "en"
     print(t("status.idle"))
 """
@@ -12,7 +12,7 @@ from __future__ import annotations
 import locale
 import logging
 
-logger = logging.getLogger("voice2cc.i18n")
+logger = logging.getLogger("voice2ai.i18n")
 
 _STRINGS = {
     "en": {
@@ -36,7 +36,7 @@ _STRINGS = {
         "tray.settings": "Settings…",
         "tray.diagnose": "Diagnose…",
         "tray.open_log": "Open log file",
-        "tray.about": "About voice2cc",
+        "tray.about": "About voice2ai",
         "tray.quit": "Quit",
 
         # diagnostics
@@ -54,7 +54,7 @@ _STRINGS = {
         "diag.dependency_missing": "Missing dependency: {name} (pip install {name})",
 
         # wizard
-        "wizard.title": "voice2cc · first-run setup",
+        "wizard.title": "voice2ai · first-run setup",
         "wizard.welcome": "Welcome. Pick your STT provider and paste your API key.",
         "wizard.provider": "Provider:",
         "wizard.provider_hint_siliconflow": "Free Mandarin model · Chinese mainland",
@@ -69,7 +69,7 @@ _STRINGS = {
         "wizard.testing": "Testing…",
 
         # settings
-        "settings.title": "voice2cc · Settings",
+        "settings.title": "voice2ai · Settings",
         "settings.tab_provider": "Provider",
         "settings.tab_audio": "Audio",
         "settings.tab_hotkey": "Hotkey",
@@ -112,7 +112,7 @@ _STRINGS = {
         "tray.settings": "设置…",
         "tray.diagnose": "诊断…",
         "tray.open_log": "打开日志文件",
-        "tray.about": "关于 voice2cc",
+        "tray.about": "关于 voice2ai",
         "tray.quit": "退出",
 
         "diag.api_ok": "API 通 · 模型 {model}",
@@ -128,7 +128,7 @@ _STRINGS = {
         "diag.dependency_ok": "依赖完整",
         "diag.dependency_missing": "缺依赖：{name}（pip install {name}）",
 
-        "wizard.title": "voice2cc · 首次设置",
+        "wizard.title": "voice2ai · 首次设置",
         "wizard.welcome": "欢迎使用。选 STT 服务商，填 API key。",
         "wizard.provider": "服务商：",
         "wizard.provider_hint_siliconflow": "免费中文模型 · 国内可用",
@@ -142,7 +142,7 @@ _STRINGS = {
         "wizard.cancel_button": "取消",
         "wizard.testing": "测试中…",
 
-        "settings.title": "voice2cc · 设置",
+        "settings.title": "voice2ai · 设置",
         "settings.tab_provider": "服务商",
         "settings.tab_audio": "音频",
         "settings.tab_hotkey": "热键",

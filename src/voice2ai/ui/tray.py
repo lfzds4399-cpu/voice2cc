@@ -9,7 +9,7 @@ import logging
 import threading
 from typing import Callable, Optional
 
-logger = logging.getLogger("voice2cc.ui.tray")
+logger = logging.getLogger("voice2ai.ui.tray")
 
 
 def _make_icon_image(size: int = 64):
@@ -100,7 +100,7 @@ class Tray:
 
     def start(self) -> None:
         ps = self._pystray
-        self._icon = ps.Icon("voice2cc", _make_icon_image(), "voice2cc", self._build_menu())
+        self._icon = ps.Icon("voice2ai", _make_icon_image(), "voice2ai", self._build_menu())
         self._thread = threading.Thread(target=self._icon.run, daemon=True)
         self._thread.start()
         logger.info("tray icon started")

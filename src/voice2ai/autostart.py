@@ -13,10 +13,10 @@ from __future__ import annotations
 import logging
 import sys
 
-logger = logging.getLogger("voice2cc.autostart")
+logger = logging.getLogger("voice2ai.autostart")
 
 _REG_PATH = r"Software\Microsoft\Windows\CurrentVersion\Run"
-_VALUE_NAME = "voice2cc"
+_VALUE_NAME = "voice2ai"
 
 
 def _is_windows() -> bool:

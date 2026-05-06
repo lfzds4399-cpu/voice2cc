@@ -1,4 +1,4 @@
-# voice2cc
+# voice2ai
 
 > Windows 上的语音输入工具。按住热键，说话，松开 — 转写好的文字自动粘贴到焦点输入框。
 
@@ -30,7 +30,7 @@ v0.1/v0.2 是单文件 proof-of-concept，证明思路可行。v0.3 做到真正
 | 改 key 要 Notepad 编辑 config.env | 首次运行向导 + 设置对话框（provider、麦、热键、语言） |
 | 没托盘 — 关掉悬浮窗就找不回来 | pystray 托盘菜单：显示/隐藏/设置/诊断/退出 |
 | 只有英文 UI | 中英文双语，跟随系统 |
-| 出错没法 debug | 内置诊断 + 滚动日志 `voice2cc.log` |
+| 出错没法 debug | 内置诊断 + 滚动日志 `voice2ai.log` |
 | 必须装 Python | PyInstaller spec 一键打包 `.exe` |
 
 ## 安装
@@ -40,8 +40,8 @@ v0.1/v0.2 是单文件 proof-of-concept，证明思路可行。v0.3 做到真正
 需要 Python 3.10+。
 
 ```bash
-git clone https://github.com/lfzds4399-cpu/voice2cc.git
-cd voice2cc
+git clone https://github.com/lfzds4399-cpu/voice2ai.git
+cd voice2ai
 pip install -r requirements.txt
 python app.py
 ```
@@ -57,10 +57,10 @@ python app.py
 ```bash
 pip install pyinstaller
 build_tools\build.bat
-# 出 dist\voice2cc\voice2cc.exe
+# 出 dist\voice2ai\voice2ai.exe
 ```
 
-把 `dist\voice2cc\` 整个文件夹打包成 zip 分发。
+把 `dist\voice2ai\` 整个文件夹打包成 zip 分发。
 
 ## Provider 选哪个
 
@@ -98,7 +98,7 @@ TRANSCRIBING → provider (SiliconFlow / OpenAI / Groq / Azure)
    ↓
 release modifiers → 等 200ms → Ctrl+V
    ↓
-DONE / ERROR（错误进 voice2cc.log）
+DONE / ERROR（错误进 voice2ai.log）
 ```
 
 pre-roll buffer 解决"按住热键瞬间说话第一个字总丢"的高频问题。
@@ -107,14 +107,14 @@ modifier-release-then-wait 解决"粘贴变成 Ctrl+Shift+V"的高频问题（VS
 ## 项目结构
 
 ```
-voice2cc/
+voice2ai/
 ├── app.py                       # 入口 shim
 ├── start.bat / install.bat
 ├── requirements.txt
 ├── pytest.ini
 ├── config.env (gitignored)      # 你的本地配置
 ├── .env.example                 # 模板
-├── src/voice2cc/
+├── src/voice2ai/
 │   ├── main.py                  # 编排器
 │   ├── config.py                # Settings + 读/写
 │   ├── i18n.py                  # 中英文字符串表
@@ -140,20 +140,20 @@ voice2cc/
 | `pip install sounddevice` 卡死 | `pip install sounddevice --no-binary :all:` 或换镜像 |
 | 没粘贴成功 | 录音期间别切焦点；检查目标 app 是不是禁了 Ctrl+V |
 | 麦被占用 | 另一个 app 占用麦（Zoom / Discord / 钉钉）— 关掉它 |
-| 没托盘图标 | pystray 没装上 — voice2cc 还能跑，只是没托盘菜单 |
+| 没托盘图标 | pystray 没装上 — voice2ai 还能跑，只是没托盘菜单 |
 | SiliconFlow 超时 | 你不在国内 — 设置里换 provider |
 
 诊断（托盘 → 诊断…）一次跑完所有检查。
 
 ## 隐私
 
-音频会发到你配置的 STT provider。**本地不存任何录音**，只有滚动日志 `voice2cc.log`（总共 ~1.5MB）。无遥测、无自动更新、无统计。代码 < 2k 行，自己读一遍。
+音频会发到你配置的 STT provider。**本地不存任何录音**，只有滚动日志 `voice2ai.log`（总共 ~1.5MB）。无遥测、无自动更新、无统计。代码 < 2k 行，自己读一遍。
 
 ## 开发
 
 ```bash
-git clone https://github.com/lfzds4399-cpu/voice2cc.git
-cd voice2cc
+git clone https://github.com/lfzds4399-cpu/voice2ai.git
+cd voice2ai
 pip install -r requirements.txt pytest
 python -m pytest tests/ -q
 ```

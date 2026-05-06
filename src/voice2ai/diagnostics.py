@@ -12,7 +12,7 @@ import time
 from dataclasses import dataclass
 from typing import Optional
 
-logger = logging.getLogger("voice2cc.diagnostics")
+logger = logging.getLogger("voice2ai.diagnostics")
 
 
 @dataclass

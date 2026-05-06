@@ -19,18 +19,18 @@ from typing import Optional
 
 from dotenv import load_dotenv, dotenv_values
 
-logger = logging.getLogger("voice2cc.config")
+logger = logging.getLogger("voice2ai.config")
 
 
 def install_root() -> Path:
-    """Return the directory that holds config.env / voice2cc.log.
+    """Return the directory that holds config.env / voice2ai.log.
 
     When frozen by PyInstaller, sys.frozen is set and we use the exe directory.
     Otherwise it's the package install root (3 levels up from this file).
     """
     if getattr(sys, "frozen", False):
         return Path(sys.executable).parent
-    # src/voice2cc/config.py → src/voice2cc → src → install root
+    # src/voice2ai/config.py → src/voice2ai → src → install root
     return Path(__file__).resolve().parents[2]
 
 
@@ -97,25 +97,33 @@ _LEGACY_KEY_MAP = {
     "STT_MODEL": (None, None, "model"),
     "API_BASE": (None, None, "api_base"),
     "AZURE_REGION": (None, None, "azure_region"),
-    "VOICE2CC_HOTKEY": (None, None, "hotkey"),
-    "VOICE2CC_LANGUAGE": (None, None, "language"),
-    "VOICE2CC_AUTOSTART": (None, None, "autostart"),
-    "VOICE2CC_INPUT_DEVICE": (None, None, "input_device"),
-    "VOICE2CC_PROVIDER": (None, None, "provider"),
-    "VOICE2CC_LOG_LEVEL": (None, None, "log_level"),
-    "VOICE2CC_SHOW_WIDGET": (None, None, "show_floating_widget"),
-    "VOICE2CC_PLAY_CUES": (None, None, "play_audio_cues"),
-    "VOICE2CC_PASTE_AFTER": (None, None, "paste_after_transcribe"),
-    "VOICE2CC_AUTO_ENTER_AFTER_PASTE": (None, None, "auto_enter_after_paste"),
-    "VOICE2CC_SMART_PASTE": (None, None, "smart_paste"),
-    "VOICE2CC_CONTINUOUS_MODE": (None, None, "continuous_mode"),
-    "VOICE2CC_CONTINUOUS_TOGGLE_HOTKEY": (None, None, "continuous_toggle_hotkey"),
-    "VOICE2CC_VAD_THRESHOLD": (None, None, "vad_threshold"),
-    "VOICE2CC_VAD_SILENCE_RATIO": (None, None, "vad_silence_ratio"),
-    "VOICE2CC_VAD_MAX_ZCR": (None, None, "vad_max_zcr"),
-    "VOICE2CC_VAD_MIN_SPEECH_MS": (None, None, "vad_min_speech_ms"),
-    "VOICE2CC_VAD_MIN_SILENCE_MS": (None, None, "vad_min_silence_ms"),
+    "VOICE2AI_HOTKEY": (None, None, "hotkey"),
+    "VOICE2AI_LANGUAGE": (None, None, "language"),
+    "VOICE2AI_AUTOSTART": (None, None, "autostart"),
+    "VOICE2AI_INPUT_DEVICE": (None, None, "input_device"),
+    "VOICE2AI_PROVIDER": (None, None, "provider"),
+    "VOICE2AI_LOG_LEVEL": (None, None, "log_level"),
+    "VOICE2AI_SHOW_WIDGET": (None, None, "show_floating_widget"),
+    "VOICE2AI_PLAY_CUES": (None, None, "play_audio_cues"),
+    "VOICE2AI_PASTE_AFTER": (None, None, "paste_after_transcribe"),
+    "VOICE2AI_AUTO_ENTER_AFTER_PASTE": (None, None, "auto_enter_after_paste"),
+    "VOICE2AI_SMART_PASTE": (None, None, "smart_paste"),
+    "VOICE2AI_CONTINUOUS_MODE": (None, None, "continuous_mode"),
+    "VOICE2AI_CONTINUOUS_TOGGLE_HOTKEY": (None, None, "continuous_toggle_hotkey"),
+    "VOICE2AI_VAD_THRESHOLD": (None, None, "vad_threshold"),
+    "VOICE2AI_VAD_SILENCE_RATIO": (None, None, "vad_silence_ratio"),
+    "VOICE2AI_VAD_MAX_ZCR": (None, None, "vad_max_zcr"),
+    "VOICE2AI_VAD_MIN_SPEECH_MS": (None, None, "vad_min_speech_ms"),
+    "VOICE2AI_VAD_MIN_SILENCE_MS": (None, None, "vad_min_silence_ms"),
 }
+
+# Backwards-compat: VOICE2CC_* keys from voice2cc 0.4.x are still accepted as
+# deprecated aliases of VOICE2AI_*. Existing config.env files keep working.
+_LEGACY_KEY_MAP.update({
+    k.replace("VOICE2AI_", "VOICE2CC_"): v
+    for k, v in list(_LEGACY_KEY_MAP.items())
+    if k.startswith("VOICE2AI_")
+})
 
 
 def _coerce(field_name: str, raw: str):
@@ -161,7 +169,7 @@ def load() -> Settings:
             if provider_field == "provider" and not inferred_provider:
                 # If user only set SILICONFLOW_API_KEY, infer provider=siliconflow
                 inferred_provider = provider_value
-    if inferred_provider and not raw.get("VOICE2CC_PROVIDER"):
+    if inferred_provider and not raw.get("VOICE2AI_PROVIDER"):
         s.provider = inferred_provider
 
     return s
@@ -176,16 +184,16 @@ def save(s: Settings) -> None:
     CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
     tmp = CONFIG_PATH.with_suffix(".env.tmp")
 
-    # We persist the canonical VOICE2CC_* keys, plus provider-specific *_API_KEY for clarity.
+    # We persist the canonical VOICE2AI_* keys, plus provider-specific *_API_KEY for clarity.
     lines: list[str] = [
-        "# voice2cc config — written by Settings dialog. Edits here are read on next launch.",
-        "# https://github.com/lfzds4399-cpu/voice2cc",
+        "# voice2ai config — written by Settings dialog. Edits here are read on next launch.",
+        "# https://github.com/lfzds4399-cpu/voice2ai",
         "",
-        f"VOICE2CC_PROVIDER={s.provider}",
+        f"VOICE2AI_PROVIDER={s.provider}",
         f"STT_MODEL={s.model}",
         f"API_BASE={s.api_base}",
         "",
-        "# Provider key — set the one matching VOICE2CC_PROVIDER above",
+        "# Provider key — set the one matching VOICE2AI_PROVIDER above",
         f"SILICONFLOW_API_KEY={s.api_key if s.provider == 'siliconflow' else ''}",
         f"OPENAI_API_KEY={s.api_key if s.provider == 'openai' else ''}",
         f"GROQ_API_KEY={s.api_key if s.provider == 'groq' else ''}",
@@ -193,16 +201,16 @@ def save(s: Settings) -> None:
         f"AZURE_REGION={s.azure_region}",
         "",
         "# Hotkey — human-readable, e.g. ctrl+shift+space, ctrl+alt+v, f8",
-        f"VOICE2CC_HOTKEY={s.hotkey}",
+        f"VOICE2AI_HOTKEY={s.hotkey}",
         "",
         "# UX",
-        f"VOICE2CC_LANGUAGE={s.language}",
-        f"VOICE2CC_AUTOSTART={'true' if s.autostart else 'false'}",
-        f"VOICE2CC_INPUT_DEVICE={s.input_device}",
-        f"VOICE2CC_SHOW_WIDGET={'true' if s.show_floating_widget else 'false'}",
-        f"VOICE2CC_PLAY_CUES={'true' if s.play_audio_cues else 'false'}",
-        f"VOICE2CC_PASTE_AFTER={'true' if s.paste_after_transcribe else 'false'}",
-        f"VOICE2CC_LOG_LEVEL={s.log_level}",
+        f"VOICE2AI_LANGUAGE={s.language}",
+        f"VOICE2AI_AUTOSTART={'true' if s.autostart else 'false'}",
+        f"VOICE2AI_INPUT_DEVICE={s.input_device}",
+        f"VOICE2AI_SHOW_WIDGET={'true' if s.show_floating_widget else 'false'}",
+        f"VOICE2AI_PLAY_CUES={'true' if s.play_audio_cues else 'false'}",
+        f"VOICE2AI_PASTE_AFTER={'true' if s.paste_after_transcribe else 'false'}",
+        f"VOICE2AI_LOG_LEVEL={s.log_level}",
     ]
 
     tmp.write_text("\n".join(lines) + "\n", encoding="utf-8")

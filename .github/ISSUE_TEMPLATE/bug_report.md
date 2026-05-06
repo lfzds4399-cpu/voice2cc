@@ -29,7 +29,7 @@ What you thought would happen.
 
 **Console output**
 
-Run `python voice2cc.py` from a terminal and paste the output here (redact your API key).
+Run `python voice2ai.py` from a terminal and paste the output here (redact your API key).
 
 ```
 <output here>

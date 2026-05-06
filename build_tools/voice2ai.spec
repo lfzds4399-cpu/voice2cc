@@ -1,6 +1,6 @@
-# PyInstaller spec for voice2cc Windows build.
-# Build:  pyinstaller build_tools/voice2cc.spec --clean --noconfirm
-# Output: dist/voice2cc/voice2cc.exe (folder mode — startup is faster than --onefile)
+# PyInstaller spec for voice2ai Windows build.
+# Build:  pyinstaller build_tools/voice2ai.spec --clean --noconfirm
+# Output: dist/voice2ai/voice2ai.exe (folder mode — startup is faster than --onefile)
 #
 # Notes:
 #   - We use folder mode because --onefile triggers Win Defender heuristics on unsigned bundles
@@ -16,16 +16,16 @@ a = Analysis(
     binaries=[],
     datas=[],
     hiddenimports=[
-        'voice2cc',
-        'voice2cc.main',
-        'voice2cc.providers.siliconflow',
-        'voice2cc.providers.openai',
-        'voice2cc.providers.groq',
-        'voice2cc.providers.azure',
-        'voice2cc.ui.floating',
-        'voice2cc.ui.tray',
-        'voice2cc.ui.wizard',
-        'voice2cc.ui.settings_dialog',
+        'voice2ai',
+        'voice2ai.main',
+        'voice2ai.providers.siliconflow',
+        'voice2ai.providers.openai',
+        'voice2ai.providers.groq',
+        'voice2ai.providers.azure',
+        'voice2ai.ui.floating',
+        'voice2ai.ui.tray',
+        'voice2ai.ui.wizard',
+        'voice2ai.ui.settings_dialog',
         'pystray._win32',
         'PIL.ImageDraw',
         'sounddevice',
@@ -47,7 +47,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='voice2cc',
+    name='voice2ai',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -67,5 +67,5 @@ coll = COLLECT(
     a.datas,
     strip=False,
     upx=False,
-    name='voice2cc',
+    name='voice2ai',
 )

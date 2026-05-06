@@ -14,7 +14,7 @@ from typing import Protocol
 
 from ..i18n import t
 
-logger = logging.getLogger("voice2cc.ui.floating")
+logger = logging.getLogger("voice2ai.ui.floating")
 
 
 class Controller(Protocol):
@@ -38,7 +38,7 @@ class FloatingPanel:
         self.controller = controller
         self.ui_q = ui_q
 
-        root.title("voice2cc")
+        root.title("voice2ai")
         try:
             root.overrideredirect(True)
         except tk.TclError:

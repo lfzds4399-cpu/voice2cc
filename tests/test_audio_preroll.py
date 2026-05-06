@@ -5,7 +5,7 @@ from unittest.mock import patch
 
 import numpy as np
 
-from voice2cc.audio import MicCapture
+from voice2ai.audio import MicCapture
 
 
 def test_preroll_collects_chunks_during_idle():

@@ -10,7 +10,7 @@ env/
 .idea/
 .vscode/
 *.log
-voice2cc.log*
+voice2ai.log*
 
 # PyInstaller
 build/
