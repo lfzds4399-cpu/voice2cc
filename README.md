@@ -183,6 +183,18 @@ python -m pytest tests/ -q
 
 PRs welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md). Security: [SECURITY.md](./SECURITY.md).
 
+## Sibling projects
+
+Other small, single-author harnesses I publish under [@lfzds4399-cpu](https://github.com/lfzds4399-cpu) — same MIT, same opinionated taste:
+
+| Repo | One line |
+|---|---|
+| [**ai-council**](https://github.com/lfzds4399-cpu/ai-council) | Multi-voter consensus framework — disagreement *blocks* instead of being averaged away |
+| [**domain-harness**](https://github.com/lfzds4399-cpu/domain-harness) | Automated domain investing — discovery → AI Council valuation → registration → resale, with hard budget walls |
+| [**sitige-harness**](https://github.com/lfzds4399-cpu/sitige-harness) | Pipeline runtime — composable agents / validators / pipelines, async, observable |
+
+If voice2ai is useful to you, ⭐ the repo — it's the cheapest signal and it actually moves the needle.
+
 ## License
 
 MIT — see [LICENSE](./LICENSE).
