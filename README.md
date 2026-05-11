@@ -148,7 +148,7 @@ voice2ai/
 │   ├── autostart.py             # Windows registry HKCU\Run
 │   ├── providers/               # STT providers (siliconflow, openai, groq, azure)
 │   └── ui/                      # floating widget, tray, wizard, settings dialog
-├── tests/                       # 38 unit tests, no GUI/network needed
+├── tests/                       # 48 unit tests, no GUI/network needed
 └── build_tools/                 # PyInstaller spec + build.bat
 ```
 

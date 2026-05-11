@@ -16,8 +16,9 @@ Linked issue or motivation.
 
 **Checks**
 
-- [ ] `python -m compileall voice2ai.py` is clean
-- [ ] `ruff check voice2ai.py --select=E,F,W` passes
+- [ ] `python -m compileall src/ app.py` is clean
+- [ ] `ruff check src/ tests/ app.py` passes
+- [ ] `pytest tests/` reports 48 passing
 - [ ] Floating widget still launches and shows mic level
 - [ ] No new always-on paid services or telemetry
 

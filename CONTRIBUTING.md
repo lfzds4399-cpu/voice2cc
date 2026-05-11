@@ -9,25 +9,26 @@ git clone https://github.com/<your-fork>/voice2ai.git
 cd voice2ai
 pip install -r requirements.txt
 cp .env.example config.env       # then edit and add your STT key
-python voice2ai.py
+python app.py
 ```
 
 ## What I'd love help with
 
-- **New STT backends** — local Whisper, OpenAI, Deepgram, Azure. The pluggable seam is in `transcribe()` in `voice2ai.py`.
-- **macOS / Linux support** — currently Windows-only because of `pynput` and `pyperclip` quirks. Patches very welcome.
+- **New STT backends** — add a class next to `src/voice2ai/providers/{siliconflow,openai,groq,azure}.py`. The protocol lives in `providers/base.py` and selection is driven by `VOICE2AI_PROVIDER`.
+- **macOS / Linux support** — currently Windows-only because of `pynput` and `pyperclip` quirks. See pinned issues [#1](https://github.com/lfzds4399-cpu/voice2ai/issues/1) (macOS) and [#2](https://github.com/lfzds4399-cpu/voice2ai/issues/2) (Linux).
 - **Hotkey conflicts** — if you found a combo that doesn't fight the IME on your locale, share the config.
 - **Error messages** — anything you hit that confused you, the fix is usually a clearer message.
 
 ## Before opening a PR
 
-1. **Compile clean**: `python -m compileall voice2ai.py` should produce no warnings.
-2. **Lint**: `ruff check voice2ai.py --select=E,F,W` should pass.
-3. **Smoke it locally**: launch and verify the floating widget appears and at least the *idle* state shows your mic level.
+1. **Tests pass**: `pytest tests/` should report 48 passing.
+2. **Compile clean**: `python -m compileall src/ app.py` should produce no warnings.
+3. **Lint**: `ruff check src/ tests/ app.py` should pass.
+4. **Smoke it locally**: launch and verify the floating widget appears and at least the *idle* state shows your mic level.
 
 ## Style
 
-- Single file (`voice2ai.py`) is intentional — keep it that way unless there's a strong case to split.
+- Source lives under `src/voice2ai/` (package layout); entrypoint is `app.py` at repo root.
 - Standard library first, minimal deps.
 - No telemetry, no analytics, no auto-updates.
 

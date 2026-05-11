@@ -17,4 +17,4 @@ I'll acknowledge within 7 days.
 - Any path that prints / logs / persists the API key outside `config.env`
 - Any keylogger-like behaviour on non-hotkey input
 
-This is a single-file Python script that talks to one HTTP endpoint. The attack surface is small; please respect that and don't waste your time (or mine) on theoretical issues.
+This is a small Windows desktop tool (~21 modules under `src/voice2ai/`) that captures microphone audio on a hotkey and sends it to one of four configured STT endpoints. The attack surface is small — no network listener, no auto-update, no telemetry. Please respect that and don't waste your time (or mine) on theoretical issues.
