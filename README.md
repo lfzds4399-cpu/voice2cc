@@ -17,6 +17,8 @@
 
 Whisper-class STT is fast enough that **hold a key, speak, release** beats typing. Every voice tool I tried was either a heavyweight dictation suite, locked into one editor, or didn't auto-submit. So I made one that's the opposite of all three: **~3 700 LoC of Python, hotkey + paste, MIT, no account on my side, no telemetry**.
 
+Windows-only today. macOS / Linux issues are open with scope and merge criteria — happy to mentor a port.
+
 ## What works today
 
 | | |
@@ -28,6 +30,14 @@ Whisper-class STT is fast enough that **hold a key, speak, release** beats typin
 | 🌐 **4 STT providers** | Groq (fastest, free tier) / SiliconFlow (Mandarin-strong, China-friendly) / OpenAI / Azure |
 | 🧪 **48 unit tests** | offline-only — no GUI, no network |
 | 📦 **One-folder .exe** | No Python install for end users — unzip and run |
+
+## The detail that took longest
+
+In VS Code / Cursor / any browser, naively sending **Ctrl+V** right after a **Ctrl+Shift+Space** hotkey opens the *command palette* — because Ctrl+Shift is still physically held when paste fires. The heuristic that actually works:
+
+> **Release all modifiers → sleep 200 ms → then Ctrl+V.**
+
+Pair that with an **always-on 300 ms pre-roll ring buffer** (so the first syllable of "hello" isn't clipped before the hotkey debounce settles) and you have most of the value-over-a-one-file-Whisper-script. Both are < 30 lines of code; both took a day to get right.
 
 ## Verified live (2026-05-06)
 
@@ -62,9 +72,7 @@ Requires Python 3.10+.
 
 ```bash
 git clone https://github.com/lfzds4399-cpu/voice2ai.git
-cd voice2ai
-pip install -r requirements.txt
-python app.py
+cd voice2ai && pip install -r requirements.txt && python app.py
 ```
 
 The first run shows a setup wizard. Pick a provider, paste your API key, click Test, click Save.
@@ -195,7 +203,7 @@ Other small, single-author harnesses I publish under [@lfzds4399-cpu](https://gi
 | [**domain-harness**](https://github.com/lfzds4399-cpu/domain-harness) | Automated domain investing — discovery → AI Council valuation → registration → resale, with hard budget walls |
 | [**methods-harness**](https://github.com/lfzds4399-cpu/methods-harness) | SymPy-verified bilingual lesson pipeline for high-school calculus — one CLI re-renders everything |
 
-If voice2ai is useful to you, ⭐ the repo — it's the cheapest signal and it actually moves the needle.
+I dictated most of this README through voice2ai itself. If it's useful to you, ⭐ the repo — it's the cheapest signal and it actually moves the needle.
 
 ## License
 
