@@ -189,6 +189,7 @@ Other small, single-author harnesses I publish under [@lfzds4399-cpu](https://gi
 
 | Repo | One line |
 |---|---|
+| [**harness-engineering**](https://github.com/lfzds4399-cpu/harness-engineering) | The pattern (not a framework) underlying all of these — agents + validators + manifest, validated across 6+ projects |
 | [**ai-council**](https://github.com/lfzds4399-cpu/ai-council) | Multi-voter consensus framework — disagreement *blocks* instead of being averaged away |
 | [**claude-screen-mcp**](https://github.com/lfzds4399-cpu/claude-screen-mcp) | MCP server letting Claude see your screen (Windows + macOS + Linux) — OCR + smart vision-diff |
 | [**domain-harness**](https://github.com/lfzds4399-cpu/domain-harness) | Automated domain investing — discovery → AI Council valuation → registration → resale, with hard budget walls |
