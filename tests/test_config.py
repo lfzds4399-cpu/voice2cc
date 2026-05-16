@@ -48,11 +48,60 @@ def test_explicit_provider_overrides_inferred(tmp_config):
     assert s.provider == "openai"
 
 
+def test_provider_specific_model_aliases_are_loaded(tmp_config):
+    tmp_config.write_text(
+        "VOICE2AI_PROVIDER=groq\n"
+        "GROQ_API_KEY=gsk-test123\n"
+        "GROQ_MODEL=whisper-large-v3-turbo\n",
+        encoding="utf-8",
+    )
+    from voice2ai.config import load
+    s = load()
+    assert s.provider == "groq"
+    assert s.api_key == "gsk-test123"
+    assert s.model == "whisper-large-v3-turbo"
+
+
+def test_explicit_provider_ignores_other_provider_model_aliases(tmp_config):
+    tmp_config.write_text(
+        "VOICE2AI_PROVIDER=siliconflow\n"
+        "SILICONFLOW_API_KEY=sf-test-key\n"
+        "SILICONFLOW_MODEL=FunAudioLLM/SenseVoiceSmall\n"
+        "OPENAI_MODEL=whisper-1\n"
+        "GROQ_MODEL=whisper-large-v3-turbo\n"
+        "AZURE_MODEL=whisper\n",
+        encoding="utf-8",
+    )
+    from voice2ai.config import load
+    s = load()
+    assert s.provider == "siliconflow"
+    assert s.api_key == "sf-test-key"
+    assert s.model == "FunAudioLLM/SenseVoiceSmall"
+
+
+def test_azure_speech_aliases_are_loaded(tmp_config):
+    tmp_config.write_text(
+        "AZURE_SPEECH_KEY=azure-test-key\n"
+        "AZURE_SPEECH_REGION=voice2ai-resource\n"
+        "AZURE_MODEL=whisper\n",
+        encoding="utf-8",
+    )
+    from voice2ai.config import load
+    s = load()
+    assert s.provider == "azure"
+    assert s.api_key == "azure-test-key"
+    assert s.azure_region == "voice2ai-resource"
+    assert s.model == "whisper"
+
+
 def test_save_roundtrip(tmp_config):
     from voice2ai.config import Settings, load, save
     orig = Settings(
         provider="groq", api_key="gsk-test123", model="whisper-large-v3",
         hotkey="ctrl+alt+v", language="zh", autostart=True, paste_after_transcribe=False,
+        auto_enter_after_paste=False, smart_paste=False, continuous_mode=True,
+        continuous_toggle_hotkey="right ctrl", vad_threshold=0.02,
+        vad_min_speech_ms=400, vad_min_silence_ms=1200,
     )
     save(orig)
     loaded = load()
@@ -63,6 +112,13 @@ def test_save_roundtrip(tmp_config):
     assert loaded.language == "zh"
     assert loaded.autostart is True
     assert loaded.paste_after_transcribe is False
+    assert loaded.auto_enter_after_paste is False
+    assert loaded.smart_paste is False
+    assert loaded.continuous_mode is True
+    assert loaded.continuous_toggle_hotkey == "right ctrl"
+    assert loaded.vad_threshold == 0.02
+    assert loaded.vad_min_speech_ms == 400
+    assert loaded.vad_min_silence_ms == 1200
 
 
 def test_effective_api_base_falls_back_to_provider_default(tmp_config):

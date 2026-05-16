@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "voice2ai"
+version = "0.5.1"
+description = "Windows push-to-talk speech-to-text that pastes transcripts into the focused app."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Lin" }]
+keywords = ["speech-to-text", "dictation", "windows", "whisper", "stt"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Win32 (MS Windows)",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+]
+dependencies = [
+    "sounddevice>=0.4.6",
+    "soundfile>=0.12.1",
+    "numpy>=1.24",
+    "requests>=2.31",
+    "pyperclip>=1.8.2",
+    "pynput>=1.7.6",
+    "python-dotenv>=1.0.0",
+    "pystray>=0.19.5",
+    "Pillow>=10.0.0",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.4"]
+build = ["pyinstaller>=6"]
+
+[project.urls]
+Homepage = "https://github.com/lfzds4399-cpu/voice2ai"
+Repository = "https://github.com/lfzds4399-cpu/voice2ai"
+Issues = "https://github.com/lfzds4399-cpu/voice2ai/issues"
+
+[project.scripts]
+voice2ai = "voice2ai.main:run"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+addopts = "-ra --strict-markers"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E9", "F"]
+ignore = ["F401", "F811"]

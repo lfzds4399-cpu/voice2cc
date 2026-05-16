@@ -94,9 +94,15 @@ _LEGACY_KEY_MAP = {
     "OPENAI_API_KEY": ("provider", "openai", "api_key"),
     "GROQ_API_KEY": ("provider", "groq", "api_key"),
     "AZURE_API_KEY": ("provider", "azure", "api_key"),
+    "AZURE_SPEECH_KEY": ("provider", "azure", "api_key"),
     "STT_MODEL": (None, None, "model"),
+    "SILICONFLOW_MODEL": ("provider", "siliconflow", "model"),
+    "OPENAI_MODEL": ("provider", "openai", "model"),
+    "GROQ_MODEL": ("provider", "groq", "model"),
+    "AZURE_MODEL": ("provider", "azure", "model"),
     "API_BASE": (None, None, "api_base"),
     "AZURE_REGION": (None, None, "azure_region"),
+    "AZURE_SPEECH_REGION": (None, None, "azure_region"),
     "VOICE2AI_HOTKEY": (None, None, "hotkey"),
     "VOICE2AI_LANGUAGE": (None, None, "language"),
     "VOICE2AI_AUTOSTART": (None, None, "autostart"),
@@ -160,8 +166,16 @@ def load() -> Settings:
 
     # 1) Map legacy keys onto Settings
     inferred_provider = None
+    explicit_provider = (raw.get("VOICE2AI_PROVIDER") or raw.get("VOICE2CC_PROVIDER") or "").strip()
     for legacy_key, (provider_field, provider_value, dest_field) in _LEGACY_KEY_MAP.items():
         if legacy_key in raw and raw[legacy_key]:
+            if (
+                provider_field == "provider"
+                and explicit_provider
+                and provider_value != explicit_provider
+                and dest_field in ("api_key", "model")
+            ):
+                continue
             v = _coerce(dest_field, raw[legacy_key])
             if v is None:
                 continue
@@ -202,6 +216,7 @@ def save(s: Settings) -> None:
         "",
         "# Hotkey — human-readable, e.g. ctrl+shift+space, ctrl+alt+v, f8",
         f"VOICE2AI_HOTKEY={s.hotkey}",
+        f"VOICE2AI_CONTINUOUS_TOGGLE_HOTKEY={s.continuous_toggle_hotkey}",
         "",
         "# UX",
         f"VOICE2AI_LANGUAGE={s.language}",
@@ -210,6 +225,14 @@ def save(s: Settings) -> None:
         f"VOICE2AI_SHOW_WIDGET={'true' if s.show_floating_widget else 'false'}",
         f"VOICE2AI_PLAY_CUES={'true' if s.play_audio_cues else 'false'}",
         f"VOICE2AI_PASTE_AFTER={'true' if s.paste_after_transcribe else 'false'}",
+        f"VOICE2AI_AUTO_ENTER_AFTER_PASTE={'true' if s.auto_enter_after_paste else 'false'}",
+        f"VOICE2AI_SMART_PASTE={'true' if s.smart_paste else 'false'}",
+        f"VOICE2AI_CONTINUOUS_MODE={'true' if s.continuous_mode else 'false'}",
+        f"VOICE2AI_VAD_THRESHOLD={s.vad_threshold}",
+        f"VOICE2AI_VAD_SILENCE_RATIO={s.vad_silence_ratio}",
+        f"VOICE2AI_VAD_MAX_ZCR={s.vad_max_zcr}",
+        f"VOICE2AI_VAD_MIN_SPEECH_MS={s.vad_min_speech_ms}",
+        f"VOICE2AI_VAD_MIN_SILENCE_MS={s.vad_min_silence_ms}",
         f"VOICE2AI_LOG_LEVEL={s.log_level}",
     ]
 

@@ -181,7 +181,7 @@ def detect_system_language() -> str:
         pass
     if not loc:
         try:
-            loc = locale.getdefaultlocale()[0] or ""  # noqa: deprecated, fallback only
+            loc = locale.getdefaultlocale()[0] or ""
         except Exception:
             loc = ""
     if not loc:

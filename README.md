@@ -1,7 +1,8 @@
 # voice2ai
 
-> **Hold a key, talk, your message lands in the focused chat — submitted.**
-> Or press one button and never touch the keyboard at all. Windows · MIT · 48 tests.
+Windows push-to-talk speech-to-text. Hold a hotkey, speak, release, and the
+transcript is pasted into the focused app. Optional continuous mode uses voice
+activity detection and can submit each utterance automatically.
 
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
@@ -9,202 +10,128 @@
 [![Tests](https://img.shields.io/badge/tests-48%20passing-brightgreen.svg)](./tests/)
 [![Release](https://img.shields.io/github/v/release/lfzds4399-cpu/voice2ai?label=release&color=blue)](https://github.com/lfzds4399-cpu/voice2ai/releases/latest)
 
-> 🌏 [中文 README](./README.zh-CN.md) · [⬇️ Download .exe](https://github.com/lfzds4399-cpu/voice2ai/releases/latest)
+[Chinese README](./README.zh-CN.md) | [Latest release](https://github.com/lfzds4399-cpu/voice2ai/releases/latest)
 
-![voice2ai demo (animated illustration)](./docs/voice2ai-demo.gif)
+![voice2ai demo](./docs/voice2ai-demo.gif)
 
-## I built this because typing 50-word AI prompts at 60 wpm was killing my thumbs
+## What it does
 
-Whisper-class STT is fast enough that **hold a key, speak, release** beats typing. Every voice tool I tried was either a heavyweight dictation suite, locked into one editor, or didn't auto-submit. So I made one that's the opposite of all three: **~3 700 LoC of Python, hotkey + paste, MIT, no account on my side, no telemetry**.
-
-Windows-only today. macOS / Linux issues are open with scope and merge criteria — happy to mentor a port.
-
-## What works today
-
-| | |
+| Feature | Current behavior |
 |---|---|
-| 🎯 **Push-to-talk** (F8 hold) | Hold key → speak → release → transcript pastes into the focused window AND auto-Enters |
-| 🤖 **Continuous / VAD** (F9 toggle) | Speak. Pause 1.5 s. Transcript appears, submitted. Loop. Energy + ZCR + hysteresis = breathing-mid-sentence does NOT cut you off |
-| 🧠 **Smart paste, 10+ apps** | VS Code / Cursor / Windsurf / Trae / Windows Terminal / PowerShell ISE / mintty / PuTTY → auto Ctrl+Shift+V. Browsers / Notepad / WeChat / Notion → forced Ctrl+V (no incognito-paste) |
-| 🪟 **Multi-window aware** | Click the window you want, speak. voice2ai captures the HWND at speech-start and pastes there even if focus drifts |
-| 🌐 **4 STT providers** | Groq (fastest, free tier) / SiliconFlow (Mandarin-strong, China-friendly) / OpenAI / Azure |
-| 🧪 **48 unit tests** | offline-only — no GUI, no network |
-| 📦 **One-folder .exe** | No Python install for end users — unzip and run |
+| Push-to-talk | Default hotkey is `ctrl+shift+space`; presets include `f8`, `f9`, `right ctrl`, and `ctrl+alt+v`. |
+| Continuous mode | Toggle with `f9`; EnergyVAD waits for a pause before transcribing the utterance. |
+| Paste target restore | Captures the foreground window at speech start and restores it before paste. |
+| Smart paste | Uses `ctrl+shift+v` for known terminal/editor targets and `ctrl+v` elsewhere. |
+| STT providers | SiliconFlow, OpenAI, Groq, and Azure OpenAI Whisper-style transcription endpoints. |
+| Local state | Stores configuration in `config.env` and writes a rotating `voice2ai.log`. |
 
-## The detail that took longest
-
-In VS Code / Cursor / any browser, naively sending **Ctrl+V** right after a **Ctrl+Shift+Space** hotkey opens the *command palette* — because Ctrl+Shift is still physically held when paste fires. The heuristic that actually works:
-
-> **Release all modifiers → sleep 200 ms → then Ctrl+V.**
-
-Pair that with an **always-on 300 ms pre-roll ring buffer** (so the first syllable of "hello" isn't clipped before the hotkey debounce settles) and you have most of the value-over-a-one-file-Whisper-script. Both are < 30 lines of code; both took a day to get right.
-
-## Verified live (2026-05-06)
-
-- WeChat input → speech → text lands in WeChat ✓
-- Three Claude Code windows open, click one → speech → that window receives text ✓
-- Mid-sentence breathing (换气) does NOT prematurely end the utterance ✓
-
-## Why
-
-Long prompts in Claude Code / Cursor / any chat UI are a thumb workout. Whisper-class STT is now fast enough that **holding a key and speaking** is genuinely faster than typing — but every voice tool I tried wanted to be a full dictation suite. I just wanted **one key, one paste, no UI in the way**.
-
-## What's new in v0.3
-
-The v0.1/v0.2 single-file proof-of-concept proved the idea. v0.3 makes it actually usable:
-
-| Pain point in v0.2 | Fix in v0.3 |
-|---|---|
-| Pasting after Ctrl+Shift+Space sometimes opened VS Code's command palette | `paste_to_focus` now releases all modifiers and waits 200ms before sending Ctrl+V |
-| First syllable of every recording was clipped | Always-on 300ms pre-roll ring buffer, prepended on hotkey-down |
-| Only SiliconFlow was supported | 4 providers: SiliconFlow / OpenAI / Groq / Azure — all OpenAI-compatible HTTP |
-| Editing config.env in Notepad to change a key | First-run wizard + Settings dialog (provider, mic, hotkey, language) |
-| No tray icon — close the widget and you couldn't get it back | pystray icon with show/hide/settings/diagnose/quit |
-| English UI only | Bilingual EN / ZH with auto-detect |
-| "Why doesn't it work?" had no answer | Built-in diagnostics + rolling `voice2ai.log` |
-| Required Python install for non-developers | PyInstaller spec for one-folder `.exe` build |
+The project is Windows-first because the paste backend uses Win32 keyboard APIs.
+Most provider, config, audio, and VAD code is platform-neutral, but macOS and
+Linux paste support are not implemented yet.
 
 ## Install
 
-### For developers
+### From source
 
-Requires Python 3.10+.
+Requires Python 3.10 or newer.
 
-```bash
+```powershell
 git clone https://github.com/lfzds4399-cpu/voice2ai.git
-cd voice2ai && pip install -r requirements.txt && python app.py
+cd voice2ai
+python -m pip install -r requirements.txt
+python app.py
 ```
 
-The first run shows a setup wizard. Pick a provider, paste your API key, click Test, click Save.
+The first run opens a setup wizard. Choose a provider, paste the API key, test
+the provider, and save.
 
-Or double-click `install.bat` once, then `start.bat` to launch.
+You can also run:
 
-### For end users (no Python required)
+```powershell
+install.bat
+start.bat
+```
 
-We don't yet ship a signed `.exe` (signing requires a $300/yr code-signing certificate). To build your own:
+### Packaged Windows build
 
-```bash
-pip install pyinstaller
+The project has a PyInstaller spec, but the published executable is unsigned.
+Windows SmartScreen may warn on first launch.
+
+```powershell
+python -m pip install pyinstaller
 build_tools\build.bat
-# → dist\voice2ai\voice2ai.exe
 ```
 
-Zip the `dist\voice2ai\` folder and distribute it.
+The build output is `dist\voice2ai\voice2ai.exe`.
 
 ## Providers
 
-Pick whichever suits your situation:
-
-| Provider | Model recommendation | Best for |
+| Provider | Default or recommended model | Notes |
 |---|---|---|
-| **SiliconFlow** | `FunAudioLLM/SenseVoiceSmall` | Free, Mandarin-native, China mainland accessible |
-| **OpenAI** | `whisper-1` / `gpt-4o-mini-transcribe` | Global, paid, English-strong |
-| **Groq** | `whisper-large-v3-turbo` | Fastest (~1s round trip), generous free tier |
-| **Azure** | `whisper` deployment | Enterprise / data-residency requirements |
+| SiliconFlow | `FunAudioLLM/SenseVoiceSmall` | Good Mandarin support and mainland China access. |
+| OpenAI | `whisper-1` or `gpt-4o-mini-transcribe` | Global paid API. |
+| Groq | `whisper-large-v3-turbo` | Fast hosted Whisper-compatible endpoint. |
+| Azure | `whisper` deployment | Requires Azure OpenAI resource configuration. |
 
-The wizard surfaces all four; settings can be changed any time from the tray icon.
+`config.env` supports both the canonical keys and provider-specific aliases
+shown in `.env.example`, including `GROQ_MODEL`, `OPENAI_MODEL`,
+`SILICONFLOW_MODEL`, `AZURE_SPEECH_KEY`, and `AZURE_SPEECH_REGION`.
 
-## Hotkeys
+## How paste works
 
-Default: **Ctrl + Shift + Space**.
+voice2ai does not type the transcript character by character. It copies the
+transcript to the clipboard, releases stuck modifiers, waits briefly, restores
+the target window when possible, then sends the paste shortcut.
 
-If your IME (Chinese / Japanese / Korean) grabs that combo, change it in **Settings → Hotkey**, or pick from the presets:
-
-- `ctrl+alt+v`
-- `ctrl+\``
-- `f8` / `f9`
-- `right ctrl`
-
-## How it works
-
-```
-mic ──[InputStream]──┐
-                     ├── always-on 300ms pre-roll ring buffer
-hotkey ──[pynput]────┘
-   │                       ┌── prepend pre-roll
-   ↓ hold                  ↓
-RECORDING → audio queue → wav file
-   ↓ release
-TRANSCRIBING → provider (SiliconFlow / OpenAI / Groq / Azure)
-   ↓
-release modifiers ─→ wait 200ms ─→ Ctrl+V
-   ↓
-DONE / ERROR (logged to voice2ai.log)
-```
-
-The pre-roll buffer fixes the "first syllable lost" problem common to push-to-talk tools.
-The modifier-release-then-wait pattern fixes the "pasted as Ctrl+Shift+V" problem in apps like VS Code, Cursor, and any browser.
+This exists because users often hold modifier-heavy hotkeys. If `shift` is still
+physically down when paste is sent, Windows may see `ctrl+shift+v` instead of
+`ctrl+v`. The paste path is covered by unit tests in `tests/test_paste.py`.
 
 ## Project layout
 
-```
+```text
 voice2ai/
-├── app.py                       # entry-point shim
-├── start.bat / install.bat
-├── requirements.txt
-├── pytest.ini
-├── config.env (gitignored)      # your local config
-├── .env.example                 # template
-├── src/voice2ai/
-│   ├── main.py                  # orchestrator
-│   ├── config.py                # Settings + load/save
-│   ├── i18n.py                  # EN/ZH string table
-│   ├── audio.py                 # mic + pre-roll
-│   ├── hotkey.py                # global push-to-talk
-│   ├── paste.py                 # modifier-safe Ctrl+V
-│   ├── diagnostics.py           # startup self-test
-│   ├── autostart.py             # Windows registry HKCU\Run
-│   ├── providers/               # STT providers (siliconflow, openai, groq, azure)
-│   └── ui/                      # floating widget, tray, wizard, settings dialog
-├── tests/                       # 48 unit tests, no GUI/network needed
-└── build_tools/                 # PyInstaller spec + build.bat
+  app.py                       entry-point shim
+  start.bat / install.bat      Windows helpers
+  pyproject.toml               package metadata and tool config
+  requirements.txt             runtime dependencies
+  pytest.ini                   pytest config
+  config.env                   local config, gitignored
+  .env.example                 config template
+  src/voice2ai/
+    main.py                    app orchestration
+    config.py                  settings load/save and legacy aliases
+    audio.py                   microphone capture and pre-roll
+    hotkey.py                  global hotkey listeners
+    paste.py                   clipboard and Win32 paste backend
+    vad.py                     continuous-mode VAD
+    diagnostics.py             dependency, mic, network, and provider checks
+    providers/                 STT provider implementations
+    ui/                        wizard, settings dialog, widget, tray
+  tests/                       offline unit tests
+  build_tools/                 PyInstaller build files
 ```
-
-## Troubleshooting
-
-| Symptom | Fix |
-|---|---|
-| Hotkey doesn't fire | An IME grabs Ctrl+Shift+Space — change hotkey in Settings |
-| Widget invisible | Right-click the tray icon → Show widget |
-| Red dot but no level bar | Windows Settings → Privacy → Microphone → Allow desktop apps |
-| Transcript wrong | Try a different model in Settings (Groq's whisper-large-v3 is strongest for English) |
-| `pip install sounddevice` hangs | `pip install sounddevice --no-binary :all:` or use a mirror |
-| No paste happens | Don't switch focus before release; check the target app doesn't block Ctrl+V |
-| Mic locked error | Another app holds the mic (Zoom / Discord / DingTalk) — close it |
-| Tray icon missing | `pystray` failed to install — voice2ai still runs, just without tray menu |
-| SiliconFlow timeouts | You're outside mainland China — switch provider in Settings |
-
-Diagnostics (Tray → Diagnose…) checks all of the above.
-
-## Privacy
-
-Audio is sent to whichever STT provider you configure. **Nothing is stored on disk** beyond a rolling debug log (`voice2ai.log`, max ~1.5MB total). No telemetry, no auto-update, no analytics. The whole codebase is < 2k LoC — read it.
 
 ## Development
 
-```bash
-git clone https://github.com/lfzds4399-cpu/voice2ai.git
-cd voice2ai
-pip install -r requirements.txt pytest
+```powershell
+python -m pip install -r requirements.txt
+python -m pip install pytest ruff
 python -m pytest tests/ -q
+python -m compileall -q src app.py
+python -m ruff check src tests app.py
 ```
 
-PRs welcome. See [CONTRIBUTING.md](./CONTRIBUTING.md). Security: [SECURITY.md](./SECURITY.md).
+The current test suite is offline-only. It does not call provider APIs, drive
+the real keyboard, or require GUI automation.
 
-## Sibling projects
+## Privacy and security
 
-Other small, single-author harnesses I publish under [@lfzds4399-cpu](https://github.com/lfzds4399-cpu) — same MIT, same opinionated taste:
-
-| Repo | One line |
-|---|---|
-| [**harness-engineering**](https://github.com/lfzds4399-cpu/harness-engineering) | The pattern (not a framework) underlying all of these — agents + validators + manifest, validated across 6+ projects |
-| [**ai-council**](https://github.com/lfzds4399-cpu/ai-council) | Multi-voter consensus framework — disagreement *blocks* instead of being averaged away |
-| [**claude-screen-mcp**](https://github.com/lfzds4399-cpu/claude-screen-mcp) | MCP server letting Claude see your screen (Windows + macOS + Linux) — OCR + smart vision-diff |
-| [**domain-harness**](https://github.com/lfzds4399-cpu/domain-harness) | Automated domain investing — discovery → AI Council valuation → registration → resale, with hard budget walls |
-| [**methods-harness**](https://github.com/lfzds4399-cpu/methods-harness) | SymPy-verified bilingual lesson pipeline for high-school calculus — one CLI re-renders everything |
-
-I dictated most of this README through voice2ai itself. If it's useful to you, ⭐ the repo — it's the cheapest signal and it actually moves the needle.
+Audio is sent only to the STT provider configured by the user. voice2ai has no
+telemetry, analytics, auto-update, or network listener. API keys are stored in
+local `config.env`, which is gitignored. Security reports should follow
+[SECURITY.md](./SECURITY.md).
 
 ## License
 
-MIT — see [LICENSE](./LICENSE).
+MIT. See [LICENSE](./LICENSE).
