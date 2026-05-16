@@ -1,165 +1,65 @@
 # voice2ai
 
-> Windows 上的语音输入工具。按住热键，说话，松开 — 转写好的文字自动粘贴到焦点输入框。
+Windows 按住说话工具。按住热键讲话，松开后把转写结果粘到当前焦点窗口。我自己拿它往 VS Code、Cursor、Claude Code 和微信里塞文字。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows-blue.svg)](#install)
-[![Tests](https://img.shields.io/badge/tests-51%20passing-brightgreen.svg)](./tests/)
 
 [English README](./README.md)
 
-```
-[按住热键]   →   ● 录音中   （计时器 + 实时音量条 + pre-roll 防丢首字）
-[松开]       →   ◉ 转写中
-                 →   ✓ 已粘贴   （Ctrl+V，已处理 modifier 残留 bug）
-```
+目前只支持 Windows，粘贴后端直接调 Win32 键盘接口。provider、配置、音频、VAD 这些代码本身和平台无关，但 macOS 和 Linux 的粘贴后端还没人写。
 
-## 为什么做这个
+## Install
 
-在 Claude Code / Cursor / 任何聊天 UI 里写长 prompt 是手指马拉松。Whisper 级别的 STT 现在快到 **按住一个键说话比打字还快**了 — 但市面上工具要么塞太多功能，要么订阅 $30/月。我只要**一个键、一次粘贴、UI 不挡路**，所以做了这个。
+需要 Python 3.10 或更新版本。
 
-## v0.3 更新（与 v0.2 对比）
-
-v0.1/v0.2 是单文件 proof-of-concept，证明思路可行。v0.3 做到真正能用：
-
-| v0.2 痛点 | v0.3 修复 |
-|---|---|
-| 松开 Ctrl+Shift+Space 后粘贴有时打开 VS Code 命令面板 | `paste_to_focus` 先 release 所有 modifier，等 200ms 再发 Ctrl+V |
-| 每次录音第一个字被吃 | 待机时持续灌入 300ms 环形 pre-roll buffer，热键按下时 prepend 到录音 |
-| 只支持 SiliconFlow | 4 个 provider：SiliconFlow / OpenAI / Groq / Azure（全是 OpenAI 兼容 HTTP） |
-| 改 key 要 Notepad 编辑 config.env | 首次运行向导 + 设置对话框（provider、麦、热键、语言） |
-| 没托盘 — 关掉悬浮窗就找不回来 | pystray 托盘菜单：显示/隐藏/设置/诊断/退出 |
-| 只有英文 UI | 中英文双语，跟随系统 |
-| 出错没法 debug | 内置诊断 + 滚动日志 `voice2ai.log` |
-| 必须装 Python | PyInstaller spec 一键打包 `.exe` |
-
-## 安装
-
-### 给开发者
-
-需要 Python 3.10+。
-
-```bash
+```powershell
 git clone https://github.com/lfzds4399-cpu/voice2ai.git
 cd voice2ai
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 python app.py
 ```
 
-第一次运行会弹设置向导。选 provider、粘贴 API key、点 Test、点 Save。
+首次运行会弹设置向导。选 provider、贴 API key、点测试、保存。也可以直接双击 `install.bat` 再 `start.bat`。
 
-或者双击 `install.bat` 装依赖，然后 `start.bat` 启动。
+## 热键和模式
 
-### 给普通用户（不装 Python）
+默认热键 `ctrl+shift+space`。其他预设有 `f8`、`f9`、`right ctrl`、`ctrl+alt+v`。按 `f9` 进连续模式，EnergyVAD 等到停顿再把刚才那段话转写出来。
 
-我们暂时不发布签名后的 `.exe`（代码签名证书 ≈$300/年）。自己 build：
+开始录音的瞬间会记住当前前台窗口句柄。转写回来后先恢复那个窗口再发粘贴，所以中途切了标签页文字也不会塞错地方。已知终端和编辑器走 `ctrl+shift+v`，其他窗口走 `ctrl+v`。
 
-```bash
-pip install pyinstaller
-build_tools\build.bat
-# 出 dist\voice2ai\voice2ai.exe
-```
+## Provider
 
-把 `dist\voice2ai\` 整个文件夹打包成 zip 分发。
-
-## Provider 选哪个
-
-| Provider | 推荐模型 | 适合 |
+| Provider | 我自己用的模型 | 备注 |
 |---|---|---|
-| **SiliconFlow** | `FunAudioLLM/SenseVoiceSmall` | 免费、中文最好、国内可用 |
-| **OpenAI** | `whisper-1` / `gpt-4o-mini-transcribe` | 国际、付费、英文强 |
-| **Groq** | `whisper-large-v3-turbo` | 最快（~1s 往返）、免费额度大方 |
-| **Azure** | `whisper` 部署 | 企业 / 数据合规要求 |
+| SiliconFlow | `FunAudioLLM/SenseVoiceSmall` | 中文还行，国内能直连。 |
+| OpenAI | `whisper-1` 或 `gpt-4o-mini-transcribe` | 全球付费 API。 |
+| Groq | `whisper-large-v3-turbo` | Whisper 兼容接口，延迟低。 |
+| Azure | `whisper` deployment | 需要 Azure OpenAI resource。 |
 
-向导里 4 个都列出来，随时可以在设置里改。
+`config.env` 同时认规范字段和 `.env.example` 里的 provider 别名，例如 `GROQ_MODEL`、`OPENAI_MODEL`、`SILICONFLOW_MODEL`、`AZURE_SPEECH_KEY`、`AZURE_SPEECH_REGION`。
 
-## 热键
+## 粘贴这块花了最久
 
-默认：**Ctrl + Shift + Space**
+voice2ai 不逐字模拟输入。它先把转写写进剪贴板，释放残留 modifier，等几毫秒，尽量恢复目标窗口，再发粘贴快捷键。
 
-如果你的输入法（中/日/韩）抢这个组合，去 **设置 → 热键** 改，或选 preset：
-
-- `ctrl+alt+v`
-- `ctrl+\``
-- `f8` / `f9`
-- `right ctrl`
-
-## 工作原理
-
-```
-麦克风 ──[InputStream]──┐
-                        ├── 待机时持续灌入 300ms pre-roll 环形 buffer
-热键 ──[pynput]─────────┘
-   │                          ┌── prepend pre-roll
-   ↓ 按下                     ↓
-RECORDING → audio 队列 → wav 文件
-   ↓ 松开
-TRANSCRIBING → provider (SiliconFlow / OpenAI / Groq / Azure)
-   ↓
-release modifiers → 等 200ms → Ctrl+V
-   ↓
-DONE / ERROR（错误进 voice2ai.log）
-```
-
-pre-roll buffer 解决"按住热键瞬间说话第一个字总丢"的高频问题。
-modifier-release-then-wait 解决"粘贴变成 Ctrl+Shift+V"的高频问题（VS Code / Cursor / 浏览器都中招过）。
-
-## 项目结构
-
-```
-voice2ai/
-├── app.py                       # 入口 shim
-├── start.bat / install.bat
-├── requirements.txt
-├── pytest.ini
-├── config.env (gitignored)      # 你的本地配置
-├── .env.example                 # 模板
-├── src/voice2ai/
-│   ├── main.py                  # 编排器
-│   ├── config.py                # Settings + 读/写
-│   ├── i18n.py                  # 中英文字符串表
-│   ├── audio.py                 # 麦克风 + pre-roll
-│   ├── hotkey.py                # 全局热键
-│   ├── paste.py                 # modifier-safe Ctrl+V
-│   ├── diagnostics.py           # 启动自检
-│   ├── autostart.py             # Windows 注册表 HKCU\Run
-│   ├── providers/               # STT 服务商
-│   └── ui/                      # 悬浮窗、托盘、向导、设置对话框
-├── tests/                       # 51 个单元测试，不需要 GUI / 网络
-└── build_tools/                 # PyInstaller spec + build.bat
-```
-
-## 排错
-
-| 现象 | 解决 |
-|---|---|
-| 热键没反应 | 输入法抢了 Ctrl+Shift+Space — 在设置里换 |
-| 悬浮窗看不到 | 右键托盘图标 → 显示悬浮窗 |
-| 红点亮但音量条不动 | Windows 设置 → 隐私 → 麦克风 → 允许桌面应用 |
-| 识别错字多 | 设置里换模型（Groq 的 whisper-large-v3 英文最强） |
-| `pip install sounddevice` 卡死 | `pip install sounddevice --no-binary :all:` 或换镜像 |
-| 没粘贴成功 | 录音期间别切焦点；检查目标 app 是不是禁了 Ctrl+V |
-| 麦被占用 | 另一个 app 占用麦（Zoom / Discord / 钉钉）— 关掉它 |
-| 没托盘图标 | pystray 没装上 — voice2ai 还能跑，只是没托盘菜单 |
-| SiliconFlow 超时 | 你不在国内 — 设置里换 provider |
-
-诊断（托盘 → 诊断…）一次跑完所有检查。
-
-## 隐私
-
-音频会发到你配置的 STT provider。**本地不存任何录音**，只有滚动日志 `voice2ai.log`（总共约 1.5MB）。无遥测、无自动更新、无统计。代码总量约 3 100 行 Python，欢迎自己读。
+原因挺蠢但是真的：按 `ctrl+shift+space` 讲完话松开热键时，`shift` 可能还物理按着，Windows 这时把 `ctrl+v` 当成 `ctrl+shift+v`，终端就把粘贴吃掉了。modifier 释放这段逻辑在 `tests/test_paste.py` 里有覆盖。
 
 ## 开发
 
-```bash
-git clone https://github.com/lfzds4399-cpu/voice2ai.git
-cd voice2ai
-pip install -r requirements.txt pytest
+```powershell
+python -m pip install -r requirements.txt
+python -m pip install pytest ruff
 python -m pytest tests/ -q
+python -m ruff check src tests app.py
 ```
 
-欢迎 PR。详 [CONTRIBUTING.md](./CONTRIBUTING.md)。安全问题 [SECURITY.md](./SECURITY.md)。
+测试默认离线跑，不调 provider API，不驱动真键盘，也不做 GUI 自动化。
+
+## 隐私
+
+音频只发给你自己配的那个 STT provider。没有遥测、统计、自动更新或者监听端口。API key 写在本地 `config.env`，已经 gitignore。安全问题走 [SECURITY.md](./SECURITY.md)。
 
 ## License
 
-MIT — 见 [LICENSE](./LICENSE)。
+MIT，详见 [LICENSE](./LICENSE)。
