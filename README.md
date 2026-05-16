@@ -4,11 +4,9 @@ Windows push-to-talk speech-to-text. Hold a hotkey, speak, release, and the
 transcript is pasted into the focused app. Optional continuous mode uses voice
 activity detection and can submit each utterance automatically.
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows-blue.svg)](#install)
-[![Tests](https://img.shields.io/badge/tests-48%20passing-brightgreen.svg)](./tests/)
-[![Release](https://img.shields.io/github/v/release/lfzds4399-cpu/voice2ai?label=release&color=blue)](https://github.com/lfzds4399-cpu/voice2ai/releases/latest)
+[![Tests](https://img.shields.io/badge/tests-51%20passing-brightgreen.svg)](./tests/)
 
 [Chinese README](./README.zh-CN.md) | [Latest release](https://github.com/lfzds4399-cpu/voice2ai/releases/latest)
 

@@ -2,11 +2,11 @@
 
 > Windows 上的语音输入工具。按住热键，说话，松开 — 转写好的文字自动粘贴到焦点输入框。
 
-[![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows-blue.svg)](#install)
+[![Tests](https://img.shields.io/badge/tests-51%20passing-brightgreen.svg)](./tests/)
 
-> 🌏 [English README](./README.md)
+[English README](./README.md)
 
 ```
 [按住热键]   →   ● 录音中   （计时器 + 实时音量条 + pre-roll 防丢首字）
@@ -125,7 +125,7 @@ voice2ai/
 │   ├── autostart.py             # Windows 注册表 HKCU\Run
 │   ├── providers/               # STT 服务商
 │   └── ui/                      # 悬浮窗、托盘、向导、设置对话框
-├── tests/                       # 38 个单元测试，不需要 GUI / 网络
+├── tests/                       # 51 个单元测试，不需要 GUI / 网络
 └── build_tools/                 # PyInstaller spec + build.bat
 ```
 
@@ -147,7 +147,7 @@ voice2ai/
 
 ## 隐私
 
-音频会发到你配置的 STT provider。**本地不存任何录音**，只有滚动日志 `voice2ai.log`（总共 ~1.5MB）。无遥测、无自动更新、无统计。代码 < 2k 行，自己读一遍。
+音频会发到你配置的 STT provider。**本地不存任何录音**，只有滚动日志 `voice2ai.log`（总共约 1.5MB）。无遥测、无自动更新、无统计。代码总量约 3 100 行 Python，欢迎自己读。
 
 ## 开发
 
