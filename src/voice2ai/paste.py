@@ -1,17 +1,15 @@
 """paste.py — copy text to clipboard and paste into focused window.
 
-Why we can't just use pynput:
+pynput's keyboard.Controller is filtered as untrusted input by some Windows
+targets (browser sandboxes, Electron apps, game-launcher overlays). The paste
+backend therefore drops to Win32 keybd_event via ctypes, a lower API surface
+accepted by more applications.
 
-pynput's keyboard.Controller works on most apps but in some Windows targets
-(some browser sandboxes, some Electron apps, some game-launcher overlays) the
-synthetic keypress is filtered out as untrusted input. The fix is to drop down
-to Win32 keybd_event via ctypes — a lower API surface that more apps trust.
-
-We also still need to:
-  1. Release stuck modifiers (Ctrl/Shift/Alt) — your finger is physically still
-     holding them when this runs, so otherwise the paste becomes Ctrl+Shift+V
-     which opens the command palette in VS Code / Cursor.
-  2. Sleep ~200ms — give the OS time to dispatch the modifier-up events.
+Additional requirements:
+  1. Release stuck modifiers (Ctrl/Shift/Alt). The hotkey is still physically
+     held when this runs; otherwise paste becomes Ctrl+Shift+V, which opens
+     the command palette in many editors.
+  2. Sleep ~200ms to allow the OS to dispatch the modifier-up events.
 """
 from __future__ import annotations
 
@@ -131,7 +129,7 @@ def needs_ctrl_shift_v(hwnd: int = 0) -> bool:
       2. Class match (terminal classes)
       3. Title match (electron editors with no distinct class)
 
-    Returns False on any error so we always degrade safely to Ctrl+V.
+    Returns False on any error to degrade safely to Ctrl+V.
     """
     u = _user32()
     if u is None:
@@ -164,7 +162,7 @@ def copy_to_clipboard(text: str) -> None:
 
 
 def get_foreground_window() -> int:
-    """Snapshot the current foreground HWND so we can restore it before paste."""
+    """Snapshot the current foreground HWND for restoration before paste."""
     u = _user32()
     if u is None:
         return 0

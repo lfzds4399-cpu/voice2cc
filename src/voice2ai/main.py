@@ -267,8 +267,8 @@ class Voice2CC:
     def _on_hotkey_press(self) -> None:
         if self._state != IDLE:
             return
-        # Capture the foreground window BEFORE we touch anything — this is the
-        # window the user wants the paste to land in. Without this, the floating
+        # Capture the foreground window BEFORE any UI update — this is the
+        # target window for the paste. Without this snapshot, the floating
         # widget's update can steal focus and the paste lands in the wrong app.
         self._target_hwnd = get_foreground_window()
         self._record_started = self.mic.begin_record()
@@ -320,7 +320,7 @@ class Voice2CC:
             self._vad.reset()
             self._vad = None
         self._continuous_active = False
-        # If we were mid-recording, finalize it like a normal hotkey release.
+        # If a recording was in progress, finalize it like a normal hotkey release.
         if self._state == RECORDING:
             self._on_hotkey_release()
         self.logger.info("continuous mode OFF")

@@ -1,13 +1,13 @@
 # voice2ai
 
-Windows 按住说话工具。按住热键讲话，松开后把转写结果粘到当前焦点窗口。我自己拿它往 VS Code、Cursor、Claude Code 和微信里塞文字。
+Windows 按住说话听写工具。按住热键讲话，松开后把转写结果粘到焦点窗口。
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows-blue.svg)](#install)
 
 [English README](./README.md)
 
-目前只支持 Windows，粘贴后端直接调 Win32 键盘接口。provider、配置、音频、VAD 这些代码本身和平台无关，但 macOS 和 Linux 的粘贴后端还没人写。
+仅支持 Windows，粘贴后端直接调用 Win32 键盘接口。provider、配置、音频、VAD 层与平台无关；macOS 和 Linux 粘贴后端未实现。
 
 ## Install
 
@@ -20,30 +20,30 @@ python -m pip install -r requirements.txt
 python app.py
 ```
 
-首次运行会弹设置向导。选 provider、贴 API key、点测试、保存。也可以直接双击 `install.bat` 再 `start.bat`。
+首次运行打开设置向导：选 provider、贴 API key、测试、保存。也可双击 `install.bat` 再 `start.bat`。
 
 ## 热键和模式
 
-默认热键 `ctrl+shift+space`。其他预设有 `f8`、`f9`、`right ctrl`、`ctrl+alt+v`。按 `f9` 进连续模式，EnergyVAD 等到停顿再把刚才那段话转写出来。
+默认热键 `ctrl+shift+space`。内置预设 `f8`、`f9`、`right ctrl`、`ctrl+alt+v`。按 `f9` 进入连续模式，由 EnergyVAD 检测停顿并对前一段语音进行转写。
 
-开始录音的瞬间会记住当前前台窗口句柄。转写回来后先恢复那个窗口再发粘贴，所以中途切了标签页文字也不会塞错地方。已知终端和编辑器走 `ctrl+shift+v`，其他窗口走 `ctrl+v`。
+按下热键时记录前台窗口句柄。转写返回后先恢复该窗口再发送粘贴指令，避免录音中途切换焦点导致文字落到错误的应用。已知终端和编辑器使用 `ctrl+shift+v`，其他窗口使用 `ctrl+v`。
 
 ## Provider
 
-| Provider | 我自己用的模型 | 备注 |
+| Provider | 模型 | 备注 |
 |---|---|---|
-| SiliconFlow | `FunAudioLLM/SenseVoiceSmall` | 中文还行，国内能直连。 |
-| OpenAI | `whisper-1` 或 `gpt-4o-mini-transcribe` | 全球付费 API。 |
+| SiliconFlow | `FunAudioLLM/SenseVoiceSmall` | 支持中文，国内可直连。 |
+| OpenAI | `whisper-1`、`gpt-4o-mini-transcribe` | 全球付费 API。 |
 | Groq | `whisper-large-v3-turbo` | Whisper 兼容接口，延迟低。 |
 | Azure | `whisper` deployment | 需要 Azure OpenAI resource。 |
 
-`config.env` 同时认规范字段和 `.env.example` 里的 provider 别名，例如 `GROQ_MODEL`、`OPENAI_MODEL`、`SILICONFLOW_MODEL`、`AZURE_SPEECH_KEY`、`AZURE_SPEECH_REGION`。
+`config.env` 同时识别规范字段和 `.env.example` 中的 provider 别名，例如 `GROQ_MODEL`、`OPENAI_MODEL`、`SILICONFLOW_MODEL`、`AZURE_SPEECH_KEY`、`AZURE_SPEECH_REGION`。
 
-## 粘贴这块花了最久
+## Modifier 处理
 
-voice2ai 不逐字模拟输入。它先把转写写进剪贴板，释放残留 modifier，等几毫秒，尽量恢复目标窗口，再发粘贴快捷键。
+voice2ai 不模拟逐字键入。流程为：将转写写入剪贴板，释放残留 modifier 键，等待数毫秒，尽量恢复目标窗口，再发送粘贴快捷键。
 
-原因挺蠢但是真的：按 `ctrl+shift+space` 讲完话松开热键时，`shift` 可能还物理按着，Windows 这时把 `ctrl+v` 当成 `ctrl+shift+v`，终端就把粘贴吃掉了。modifier 释放这段逻辑在 `tests/test_paste.py` 里有覆盖。
+若 `shift` 在粘贴触发时仍被物理按住，Windows 会把 `ctrl+v` 解析为 `ctrl+shift+v`，部分终端会拦截并丢弃该粘贴。modifier 释放路径由 `tests/test_paste.py` 覆盖。
 
 ## 开发
 
@@ -54,11 +54,11 @@ python -m pytest tests/ -q
 python -m ruff check src tests app.py
 ```
 
-测试默认离线跑，不调 provider API，不驱动真键盘，也不做 GUI 自动化。
+测试离线运行，不调用 provider API，不驱动真实键盘，不做 GUI 自动化。
 
 ## 隐私
 
-音频只发给你自己配的那个 STT provider。没有遥测、统计、自动更新或者监听端口。API key 写在本地 `config.env`，已经 gitignore。安全问题走 [SECURITY.md](./SECURITY.md)。
+音频仅发送至所配置的 STT provider。无遥测、统计、自动更新或监听端口。API key 存于本地 `config.env`，已 gitignore。安全问题：[SECURITY.md](./SECURITY.md)。
 
 ## License
 

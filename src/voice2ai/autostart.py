@@ -3,8 +3,8 @@
 Adds/removes a value under:
   HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run
 
-We only ever touch HKCU (current user), so no admin elevation is needed and the
-change cannot affect other users on the machine.
+Only HKCU (current user) is modified, so no admin elevation is required and
+the change does not affect other users on the machine.
 
 On non-Windows platforms the module is a no-op (warns once).
 """

@@ -1,8 +1,8 @@
 """audio.py — microphone capture with always-on pre-roll.
 
-Why pre-roll: the user's first syllable is the highest-loss point. By keeping the
-last ~300ms of audio buffered while idle, we can prepend it to the recording the
-moment the hotkey fires, recovering the leading "嗨"/"hey".
+The first syllable is the highest-loss point. Keeping the last ~300ms of audio
+buffered while idle allows it to be prepended to the recording the moment the
+hotkey fires, recovering the leading "嗨"/"hey".
 """
 from __future__ import annotations
 

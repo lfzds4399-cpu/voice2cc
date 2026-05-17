@@ -25,7 +25,7 @@ logger = logging.getLogger("voice2ai.config")
 def install_root() -> Path:
     """Return the directory that holds config.env / voice2ai.log.
 
-    When frozen by PyInstaller, sys.frozen is set and we use the exe directory.
+    When frozen by PyInstaller, sys.frozen is set and the exe directory is used.
     Otherwise it's the package install root (3 levels up from this file).
     """
     if getattr(sys, "frozen", False):
@@ -192,13 +192,13 @@ def load() -> Settings:
 def save(s: Settings) -> None:
     """Persist Settings back to config.env. Keeps comments minimal — overwrites cleanly.
 
-    Writing back atomically is important on Windows where text editors may have the file open;
-    we write to a temp sibling and replace.
+    Atomic write is important on Windows where text editors may hold the file open;
+    a temp file is written and then replaced.
     """
     CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
     tmp = CONFIG_PATH.with_suffix(".env.tmp")
 
-    # We persist the canonical VOICE2AI_* keys, plus provider-specific *_API_KEY for clarity.
+    # Persist the canonical VOICE2AI_* keys, plus provider-specific *_API_KEY for clarity.
     lines: list[str] = [
         "# voice2ai config — written by Settings dialog. Edits here are read on next launch.",
         "# https://github.com/lfzds4399-cpu/voice2ai",

@@ -58,7 +58,7 @@ class FloatingPanel:
             import sys
             if sys.platform == "win32":
                 root.update_idletasks()  # ensure HWND exists
-                # winfo_id returns child HWND; we want the toplevel via GetParent
+                # winfo_id returns child HWND; the toplevel comes from GetParent
                 hwnd = ctypes.windll.user32.GetParent(root.winfo_id()) or root.winfo_id()
                 GWL_EXSTYLE = -20
                 WS_EX_NOACTIVATE = 0x08000000

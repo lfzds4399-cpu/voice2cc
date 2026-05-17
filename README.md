@@ -1,8 +1,7 @@
 # voice2ai
 
-Windows push-to-talk dictation. Hold a hotkey, talk, release, the transcript
-gets pasted into whatever window had focus. I use it to dictate into VS Code,
-Cursor, Claude Code, and WeChat.
+Windows push-to-talk dictation. Hold a hotkey, speak, release — the transcript
+is pasted into the focused window.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows-blue.svg)](#install)
@@ -11,9 +10,9 @@ Cursor, Claude Code, and WeChat.
 
 ![voice2ai demo](./docs/voice2ai-demo.gif)
 
-Windows-only for now. The paste backend calls Win32 keyboard APIs directly.
-Most of the provider / config / audio / VAD code is platform-neutral, but
-nobody has wired up a macOS or Linux paste backend yet.
+Windows-only. The paste backend calls Win32 keyboard APIs directly; the
+provider, config, audio, and VAD layers are platform-neutral. macOS and Linux
+paste backends are not implemented.
 
 ## Install
 
@@ -26,66 +25,60 @@ python -m pip install -r requirements.txt
 python app.py
 ```
 
-First run opens a setup wizard. Pick a provider, paste your API key, hit test,
-save. You can also double-click `install.bat` then `start.bat`.
-
-There's a PyInstaller spec in `build_tools/` if you want a frozen `.exe`, but
-the binary is unsigned so SmartScreen will complain on first launch.
+First run opens a setup wizard: pick a provider, paste an API key, test, save.
+Alternatively, run `install.bat` then `start.bat`. A PyInstaller spec in
+`build_tools/` produces a frozen `.exe`; the binary is unsigned, so SmartScreen
+will warn on first launch.
 
 ## Hotkeys and modes
 
-Default hotkey is `ctrl+shift+space`. Other built-in presets are `f8`, `f9`,
-`right ctrl`, and `ctrl+alt+v`. Press `f9` to flip into continuous mode, which
-uses EnergyVAD to wait for a pause and then transcribes whatever you just said.
+Default hotkey: `ctrl+shift+space`. Built-in presets: `f8`, `f9`, `right ctrl`,
+`ctrl+alt+v`. Press `f9` to toggle continuous mode, which uses EnergyVAD to
+detect pauses and transcribe the preceding utterance.
 
-When you start talking, voice2ai grabs the foreground window handle. When the
-transcript comes back it restores that window before pasting, so switching tabs
-mid-sentence doesn't send your text to the wrong app. Known terminals and
-editors get `ctrl+shift+v`, everything else gets `ctrl+v`.
+On hotkey press, voice2ai snapshots the foreground HWND and restores it before
+the paste fires, preventing text from landing in the wrong application after a
+mid-utterance focus change. Known terminals and editors receive
+`ctrl+shift+v`; other windows receive `ctrl+v`.
 
 ## Providers
 
-| Provider | Model I use | Notes |
+| Provider | Model | Notes |
 |---|---|---|
-| SiliconFlow | `FunAudioLLM/SenseVoiceSmall` | Decent Mandarin, reachable from mainland China. |
-| OpenAI | `whisper-1` or `gpt-4o-mini-transcribe` | Paid API, global. |
-| Groq | `whisper-large-v3-turbo` | Fast Whisper-compatible endpoint. |
-| Azure | `whisper` deployment | Needs an Azure OpenAI resource. |
+| SiliconFlow | `FunAudioLLM/SenseVoiceSmall` | Mandarin-capable, reachable from mainland China. |
+| OpenAI | `whisper-1`, `gpt-4o-mini-transcribe` | Paid API, global. |
+| Groq | `whisper-large-v3-turbo` | Whisper-compatible endpoint, low latency. |
+| Azure | `whisper` deployment | Requires an Azure OpenAI resource. |
 
-`config.env` accepts both the main key names and the provider aliases listed
-in `.env.example` (`GROQ_MODEL`, `OPENAI_MODEL`, `SILICONFLOW_MODEL`,
+`config.env` accepts the canonical keys and the provider aliases listed in
+`.env.example` (`GROQ_MODEL`, `OPENAI_MODEL`, `SILICONFLOW_MODEL`,
 `AZURE_SPEECH_KEY`, `AZURE_SPEECH_REGION`).
 
-## The paste detail that took longest to get right
+## Modifier handling
 
-voice2ai doesn't simulate typing. It copies the transcript to the clipboard,
-releases any stuck modifier keys, waits a few milliseconds, restores the target
-window if it can, then sends the paste shortcut.
+voice2ai does not simulate keystrokes. It copies the transcript to the
+clipboard, releases held modifier keys, waits a few milliseconds, restores the
+target window if possible, then sends the paste shortcut.
 
-The reason is dumb but real: if you hold `ctrl+shift+space` to talk and `shift`
-is still physically down when the paste fires, Windows reads `ctrl+shift+v`
-instead of `ctrl+v` and your terminal eats the paste. The modifier-release path
-is what `tests/test_paste.py` covers.
+If `shift` remains physically held when paste fires, Windows interprets
+`ctrl+v` as `ctrl+shift+v`, which some terminals intercept and discard. The
+modifier-release path is covered by `tests/test_paste.py`.
 
 ## Project layout
 
 ```text
-voice2ai/
-  app.py                       entry-point shim
-  start.bat / install.bat      Windows helpers
-  pyproject.toml               package metadata
-  src/voice2ai/
-    main.py                    app orchestration
-    config.py                  settings load/save
-    audio.py                   microphone capture and pre-roll
-    hotkey.py                  global hotkey listeners
-    paste.py                   clipboard and Win32 paste backend
-    vad.py                     continuous-mode VAD
-    diagnostics.py             dependency / mic / network / provider checks
-    providers/                 STT provider implementations
-    ui/                        wizard, settings, widget, tray
-  tests/                       offline unit tests
-  build_tools/                 PyInstaller build files
+app.py                  entry-point shim
+src/voice2ai/
+  main.py               app orchestration
+  config.py             settings load/save
+  audio.py              microphone capture and pre-roll
+  hotkey.py             global hotkey listeners
+  paste.py              Win32 clipboard paste backend
+  vad.py                continuous-mode VAD
+  diagnostics.py        dependency / mic / network / provider checks
+  providers/, ui/       STT providers and Tk UI components
+tests/                  offline unit tests
+build_tools/            PyInstaller spec
 ```
 
 ## Development
@@ -97,15 +90,14 @@ python -m pytest tests/ -q
 python -m ruff check src tests app.py
 ```
 
-Tests run offline. They don't call providers, drive the real keyboard, or do
-GUI automation.
+Tests run offline. Provider APIs, real keyboard input, and GUI automation are
+not exercised.
 
 ## Privacy
 
-Audio only goes to whichever STT provider you configured. There's no telemetry,
-no analytics, no auto-update, no listening socket. API keys live in
-`config.env`, which is gitignored. Security reports go through
-[SECURITY.md](./SECURITY.md).
+Audio is sent only to the configured STT provider. No telemetry, analytics,
+auto-update, or listening sockets. API keys are stored in `config.env`, which
+is gitignored. Security reports: [SECURITY.md](./SECURITY.md).
 
 ## License
 

@@ -4,7 +4,7 @@ Azure Whisper has a different URL shape than OpenAI/SiliconFlow/Groq:
   POST https://<resource>.openai.azure.com/openai/deployments/<deployment>/audio/transcriptions?api-version=2024-02-15-preview
 
 So `azure_region` here is actually the resource subdomain (or full base override).
-For most users we recommend setting `api_base` to the full deployment URL prefix.
+Recommended: set `api_base` to the full deployment URL prefix.
 """
 from __future__ import annotations
 

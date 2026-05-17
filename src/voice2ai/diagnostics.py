@@ -25,7 +25,7 @@ class CheckResult:
 # ── individual checks ────────────────────────────────────────────────
 
 def check_dependencies() -> list[CheckResult]:
-    """Each runtime dep is import-tested separately so we can pinpoint which one is missing."""
+    """Each runtime dependency is import-tested separately to identify which one is missing."""
     needed = ["numpy", "sounddevice", "soundfile", "requests", "pyperclip", "pynput", "dotenv"]
     results = []
     for mod in needed:

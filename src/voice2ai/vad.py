@@ -11,7 +11,7 @@ State machine:
 
   IDLE  ──speech ≥ min_speech_ms──→  SPEECH  ──silence ≥ min_silence_ms──→  IDLE
                                             │
-                                            └── on each transition we fire a callback.
+                                            └── a callback fires on each transition.
 
 Tuning:
   - Default threshold 0.015 was empirically OK on a built-in laptop array mic

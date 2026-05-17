@@ -13,7 +13,7 @@ logger = logging.getLogger("voice2ai.ui.tray")
 
 
 def _make_icon_image(size: int = 64):
-    """Generate a small mic icon procedurally so we don't ship a PNG asset."""
+    """Generate a small mic icon procedurally to avoid shipping a PNG asset."""
     from PIL import Image, ImageDraw
 
     img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
